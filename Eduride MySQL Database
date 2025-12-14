@@ -1,6 +1,4 @@
--- ===========================
--- 1. ADMIN TABLE
--- ===========================
+1. ADMIN TABLE
 CREATE TABLE Admin (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
@@ -9,9 +7,7 @@ CREATE TABLE Admin (
     role VARCHAR(50)
 );
 
--- ===========================
--- 2. AGENCY
--- ===========================
+2. AGENCY
 CREATE TABLE Agency (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
@@ -22,9 +18,7 @@ CREATE TABLE Agency (
     FOREIGN KEY (admin_id) REFERENCES Admin(id)
 );
 
--- ===========================
--- 3. SCHOOL
--- ===========================
+3. SCHOOL
 CREATE TABLE School (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
@@ -39,9 +33,7 @@ CREATE TABLE School (
     FOREIGN KEY (agency_id) REFERENCES Agency(id)
 );
 
--- ===========================
--- 4. DRIVER (1-1 with Bus)
--- ===========================
+4. DRIVER      
 CREATE TABLE Driver (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
@@ -53,9 +45,8 @@ CREATE TABLE Driver (
     FOREIGN KEY (agency_id) REFERENCES Agency(id)
 );
 
--- ===========================
--- 5. BUS
--- ===========================
+
+5. BUS   
 CREATE TABLE Bus (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     bus_number VARCHAR(20),
@@ -68,9 +59,7 @@ CREATE TABLE Bus (
     FOREIGN KEY (driver_id) REFERENCES Driver(id)
 );
 
--- ===========================
--- 6. BUS HELPER
--- ===========================
+6. BUS HELPER  
 CREATE TABLE BusHelper (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
@@ -83,9 +72,7 @@ CREATE TABLE BusHelper (
     FOREIGN KEY (assigned_bus_id) REFERENCES Bus(id)
 );
 
--- ===========================
--- 7. PICKUP POINT
--- ===========================
+7. PICKUP POINT   
 CREATE TABLE PickupPoint (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     stop_name VARCHAR(100),
@@ -95,9 +82,7 @@ CREATE TABLE PickupPoint (
     FOREIGN KEY (school_id) REFERENCES School(id)
 );
 
--- ===========================
--- 8. STUDENT
--- ===========================
+8. STUDENT   
 CREATE TABLE Student (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
@@ -114,9 +99,7 @@ CREATE TABLE Student (
     FOREIGN KEY (pickup_point_id) REFERENCES PickupPoint(id)
 );
 
--- ===========================
--- 9. STUDENT STATUS
--- ===========================
+9. STUDENT STATUS  
 CREATE TABLE StudentStatus (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT,
@@ -128,9 +111,7 @@ CREATE TABLE StudentStatus (
     FOREIGN KEY (updated_by) REFERENCES BusHelper(id)
 );
 
--- ===========================
--- 10. FEEDBACK
--- ===========================
+10. FEEDBACK   
 CREATE TABLE Feedback (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT,
