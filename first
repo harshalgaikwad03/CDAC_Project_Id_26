@@ -1,0 +1,27 @@
+Project Group No: 26
+
+Assigned Project Guide: Jiva Farkade
+
+Names of the Project Members
+Harshal Hemant Gaikwad
+Sandhya Dhanaji Ravan
+
+Title of the Project: EduRide: School Transport Platform
+
+Description of the Project:
+EduRide is a web-based Application that automates and manages the daily school bus transportation process.
+It connects school, bus agencies, drivers, helpers, teachers and parents in one digital system.
+
+Software Requirements for the Project:
+Frontend: React.js (18.2)
+Backend: Spring Boot (3.5.7)
+Database: MySQL (8.0)
+Testing tool: POSTMAN (API testing) / Swagger
+Version Control: GitHub
+IDE: Spring Tools Suite (STS 4.3.0)
+
+Hardware Requirements for the Project
+RAM: 8GB or above
+Hard Disk: 100 GB free space
+Internet Connection
+Processor: intel i3 or above
