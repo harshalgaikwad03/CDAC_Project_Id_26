@@ -15,10 +15,14 @@ public class Agency {
     private String email;
     private String address;
 
+main
     @Column(nullable = false)
     private String password;
 
     // Getters & Setters
+
+    // getters & setters
+ master
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -33,7 +37,9 @@ public class Agency {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+ main
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+ master
 }

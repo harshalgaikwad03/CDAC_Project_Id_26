@@ -9,6 +9,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/agencies")
 @CrossOrigin(origins = "http://localhost:5173")
+
 public class AgencyController {
 
     private final AgencyService agencyService;
@@ -42,6 +43,7 @@ public class AgencyController {
     public void delete(@PathVariable Long id) {
         agencyService.delete(id);
     }
+  main
     
     
     
@@ -60,4 +62,5 @@ public class AgencyController {
         );
     }
 
+ master
 }

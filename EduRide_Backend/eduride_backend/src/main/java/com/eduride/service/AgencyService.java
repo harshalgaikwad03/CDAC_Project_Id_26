@@ -30,6 +30,7 @@ public class AgencyService {
     public void delete(Long id) {
         agencyRepository.deleteById(id);
     }
+ main
     
     public Agency login(String email, String password) {
         return agencyRepository.findByEmail(email)
@@ -37,4 +38,6 @@ public class AgencyService {
                 .orElse(null);
     }
 
+
+master
 }

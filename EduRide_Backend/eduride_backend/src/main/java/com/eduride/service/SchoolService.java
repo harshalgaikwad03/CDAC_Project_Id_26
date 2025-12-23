@@ -30,6 +30,7 @@ public class SchoolService {
     public void delete(Long id) {
         schoolRepository.deleteById(id);
     }
+main
     
     
     public School login(String email, String password) {
@@ -38,4 +39,5 @@ public class SchoolService {
                 .orElse(null);
     }
     
+ master
 }
