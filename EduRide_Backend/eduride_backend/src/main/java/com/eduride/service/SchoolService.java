@@ -9,35 +9,30 @@ import java.util.List;
 @Service
 public class SchoolService {
 
-    private final SchoolRepository schoolRepository;
+	private final SchoolRepository schoolRepository;
 
-    public SchoolService(SchoolRepository schoolRepository) {
-        this.schoolRepository = schoolRepository;
-    }
+	public SchoolService(SchoolRepository schoolRepository) {
+		this.schoolRepository = schoolRepository;
+	}
 
-    public School save(School school) {
-        return schoolRepository.save(school);
-    }
+	public School save(School school) {
+		return schoolRepository.save(school);
+	}
 
-    public List<School> findAll() {
-        return schoolRepository.findAll();
-    }
+	public List<School> findAll() {
+		return schoolRepository.findAll();
+	}
 
-    public School findById(Long id) {
-        return schoolRepository.findById(id).orElse(null);
-    }
+	public School findById(Long id) {
+		return schoolRepository.findById(id).orElse(null);
+	}
 
-    public void delete(Long id) {
-        schoolRepository.deleteById(id);
-    }
-main
-    
-    
-    public School login(String email, String password) {
-        return schoolRepository.findByEmail(email)
-                .filter(s -> s.getPassword().equals(password))
-                .orElse(null);
-    }
-    
- master
+	public void delete(Long id) {
+		schoolRepository.deleteById(id);
+	}
+
+	public School login(String email, String password) {
+		return schoolRepository.findByEmail(email).filter(s -> s.getPassword().equals(password)).orElse(null);
+	}
+
 }

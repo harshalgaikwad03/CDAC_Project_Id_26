@@ -8,58 +8,50 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/schools")
- main
 @CrossOrigin(origins = "http://localhost:5173")
 
-master
 public class SchoolController {
 
-    private final SchoolService schoolService;
+	private final SchoolService schoolService;
 
-    public SchoolController(SchoolService schoolService) {
-        this.schoolService = schoolService;
-    }
+	public SchoolController(SchoolService schoolService) {
+		this.schoolService = schoolService;
+	}
 
-    @PostMapping
-    public School create(@RequestBody School school) {
-        return schoolService.save(school);
-    }
+	@PostMapping
+	public School create(@RequestBody School school) {
+		return schoolService.save(school);
+	}
 
-    @GetMapping
-    public List<School> getAll() {
-        return schoolService.findAll();
-    }
+	@GetMapping
+	public List<School> getAll() {
+		return schoolService.findAll();
+	}
 
-    @GetMapping("/{id}")
-    public School getById(@PathVariable Long id) {
-        return schoolService.findById(id);
-    }
+	@GetMapping("/{id}")
+	public School getById(@PathVariable Long id) {
+		return schoolService.findById(id);
+	}
 
-    @PutMapping("/{id}")
-    public School update(@PathVariable Long id, @RequestBody School school) {
-        school.setId(id);
-        return schoolService.save(school);
-    }
+	@PutMapping("/{id}")
+	public School update(@PathVariable Long id, @RequestBody School school) {
+		school.setId(id);
+		return schoolService.save(school);
+	}
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        schoolService.delete(id);
-    }
- main
-    
-    
-    
-    @PostMapping("/signup")
-    public School signup(@RequestBody School school) {
-        return schoolService.save(school);
-    }
+	@DeleteMapping("/{id}")
+	public void delete(@PathVariable Long id) {
+		schoolService.delete(id);
+	}
 
-    @PostMapping("/login")
-    public School login(@RequestBody School school) {
-        return schoolService.login(
-                school.getEmail(),
-                school.getPassword()
-        );
-    }
- master
+	@PostMapping("/signup")
+	public School signup(@RequestBody School school) {
+		return schoolService.save(school);
+	}
+
+	@PostMapping("/login")
+	public School login(@RequestBody School school) {
+		return schoolService.login(school.getEmail(), school.getPassword());
+	}
+
 }

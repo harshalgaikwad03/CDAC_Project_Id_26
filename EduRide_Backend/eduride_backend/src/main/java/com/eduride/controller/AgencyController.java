@@ -12,55 +12,46 @@ import java.util.List;
 
 public class AgencyController {
 
-    private final AgencyService agencyService;
+	private final AgencyService agencyService;
 
-    public AgencyController(AgencyService agencyService) {
-        this.agencyService = agencyService;
-    }
+	public AgencyController(AgencyService agencyService) {
+		this.agencyService = agencyService;
+	}
 
-    @PostMapping
-    public Agency create(@RequestBody Agency agency) {
-        return agencyService.save(agency);
-    }
+	@PostMapping
+	public Agency create(@RequestBody Agency agency) {
+		return agencyService.save(agency);
+	}
 
-    @GetMapping
-    public List<Agency> getAll() {
-        return agencyService.findAll();
-    }
+	@GetMapping
+	public List<Agency> getAll() {
+		return agencyService.findAll();
+	}
 
-    @GetMapping("/{id}")
-    public Agency getById(@PathVariable Long id) {
-        return agencyService.findById(id);
-    }
+	@GetMapping("/{id}")
+	public Agency getById(@PathVariable Long id) {
+		return agencyService.findById(id);
+	}
 
-    @PutMapping("/{id}")
-    public Agency update(@PathVariable Long id, @RequestBody Agency agency) {
-        agency.setId(id);
-        return agencyService.save(agency);
-    }
+	@PutMapping("/{id}")
+	public Agency update(@PathVariable Long id, @RequestBody Agency agency) {
+		agency.setId(id);
+		return agencyService.save(agency);
+	}
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        agencyService.delete(id);
-    }
-  main
-    
-    
-    
-   
+	@DeleteMapping("/{id}")
+	public void delete(@PathVariable Long id) {
+		agencyService.delete(id);
+	}
 
-    @PostMapping("/signup")
-    public Agency signup(@RequestBody Agency agency) {
-        return agencyService.save(agency);
-    }
+	@PostMapping("/signup")
+	public Agency signup(@RequestBody Agency agency) {
+		return agencyService.save(agency);
+	}
 
-    @PostMapping("/login")
-    public Agency login(@RequestBody Agency agency) {
-        return agencyService.login(
-                agency.getEmail(),
-                agency.getPassword()
-        );
-    }
+	@PostMapping("/login")
+	public Agency login(@RequestBody Agency agency) {
+		return agencyService.login(agency.getEmail(), agency.getPassword());
+	}
 
- master
 }
