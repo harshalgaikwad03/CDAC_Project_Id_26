@@ -8,6 +8,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/agencies")
+@CrossOrigin(origins = "http://localhost:5173")
+
 public class AgencyController {
 
     private final AgencyService agencyService;
@@ -41,4 +43,24 @@ public class AgencyController {
     public void delete(@PathVariable Long id) {
         agencyService.delete(id);
     }
+  main
+    
+    
+    
+   
+
+    @PostMapping("/signup")
+    public Agency signup(@RequestBody Agency agency) {
+        return agencyService.save(agency);
+    }
+
+    @PostMapping("/login")
+    public Agency login(@RequestBody Agency agency) {
+        return agencyService.login(
+                agency.getEmail(),
+                agency.getPassword()
+        );
+    }
+
+ master
 }

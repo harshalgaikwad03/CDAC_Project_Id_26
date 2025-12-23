@@ -8,6 +8,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/schools")
+ main
+@CrossOrigin(origins = "http://localhost:5173")
+
+master
 public class SchoolController {
 
     private final SchoolService schoolService;
@@ -41,4 +45,21 @@ public class SchoolController {
     public void delete(@PathVariable Long id) {
         schoolService.delete(id);
     }
+ main
+    
+    
+    
+    @PostMapping("/signup")
+    public School signup(@RequestBody School school) {
+        return schoolService.save(school);
+    }
+
+    @PostMapping("/login")
+    public School login(@RequestBody School school) {
+        return schoolService.login(
+                school.getEmail(),
+                school.getPassword()
+        );
+    }
+ master
 }
