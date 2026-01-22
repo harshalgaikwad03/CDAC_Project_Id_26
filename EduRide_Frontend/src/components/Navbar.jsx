@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const user = JSON.parse(localStorage.getItem("user"));
-
+  const role = localStorage.getItem("role"); //Get Role
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("role");
@@ -15,6 +15,18 @@ export default function Navbar() {
         <Link to="/" className="font-semibold hover:underline">
           Home
         </Link>
+
+        {/* Services only for Agency */}
+        {role === "agency" && (
+          <Link to="/agency/services" className="hover:underline">
+            Services
+          </Link>
+        )}
+
+        {/* Services only for School */}
+        {role === "school" && (
+          <Link to="/school/services">Services</Link>
+        )}
         <Link to="/about" className="hover:underline">
           About
         </Link>
