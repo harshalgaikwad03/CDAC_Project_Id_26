@@ -1,14 +1,13 @@
 package com.eduride.repository;
 
-import com.eduride.entity.Agency;
-import org.springframework.data.jpa.repository.JpaRepository;
-
- main
 import java.util.Optional;
 
-public interface AgencyRepository extends JpaRepository<Agency, Long> {
-    Optional<Agency> findByEmail(String email);
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.eduride.entity.Agency;
 
 public interface AgencyRepository extends JpaRepository<Agency, Long> {
- master
+
+	Optional<Agency> findByEmail(String email);
+
 }

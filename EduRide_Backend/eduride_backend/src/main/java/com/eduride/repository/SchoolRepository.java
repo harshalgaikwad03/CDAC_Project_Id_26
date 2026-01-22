@@ -1,14 +1,16 @@
 package com.eduride.repository;
 
-import com.eduride.entity.School;
-import org.springframework.data.jpa.repository.JpaRepository;
-
- main
+import java.util.List;
 import java.util.Optional;
 
-public interface SchoolRepository extends JpaRepository<School, Long> {
-    Optional<School> findByEmail(String email);
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SchoolRepository extends JpaRepository<School, Long> {
- master
+import com.eduride.entity.School;
+
+public interface SchoolRepository extends JpaRepository<School, Long>{
+
+	List<School> findByAgencyId(Long agencyId);
+
+	Optional<School> findByEmail(String email);
+
 }

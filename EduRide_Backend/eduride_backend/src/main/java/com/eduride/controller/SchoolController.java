@@ -1,65 +1,64 @@
 package com.eduride.controller;
 
+import com.eduride.entity.Driver;
 import com.eduride.entity.School;
 import com.eduride.service.SchoolService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/schools")
- main
 @CrossOrigin(origins = "http://localhost:5173")
-
-master
 public class SchoolController {
 
-    private final SchoolService schoolService;
+    private final SchoolService service;
 
-    public SchoolController(SchoolService schoolService) {
-        this.schoolService = schoolService;
+    public SchoolController(SchoolService service) {
+        this.service = service;
     }
 
+    // CREATE
     @PostMapping
     public School create(@RequestBody School school) {
-        return schoolService.save(school);
+        return service.create(school);
     }
 
+    // READ ALL
     @GetMapping
     public List<School> getAll() {
-        return schoolService.findAll();
+        return service.findAll();
     }
 
+    // READ BY ID
     @GetMapping("/{id}")
     public School getById(@PathVariable Long id) {
-        return schoolService.findById(id);
+        return service.findById(id);
     }
 
+    // UPDATE
     @PutMapping("/{id}")
     public School update(@PathVariable Long id, @RequestBody School school) {
-        school.setId(id);
-        return schoolService.save(school);
+        return service.update(id, school);
     }
 
+    // DELETE
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        schoolService.delete(id);
-    }
- main
-    
-    
-    
-    @PostMapping("/signup")
-    public School signup(@RequestBody School school) {
-        return schoolService.save(school);
+        service.delete(id);
     }
 
-    @PostMapping("/login")
-    public School login(@RequestBody School school) {
-        return schoolService.login(
-                school.getEmail(),
-                school.getPassword()
-        );
+   
+    @GetMapping("/agency/{agencyId}")
+    public List<School> getByAgency(@PathVariable Long agencyId) {
+        return service.findByAgency(agencyId);
     }
- master
+ // LOGIN
+    @PostMapping("/login")
+    public School login(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+        return service.login(email, password);
+    }
 }

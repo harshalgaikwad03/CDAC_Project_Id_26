@@ -1,66 +1,59 @@
 package com.eduride.controller;
 
 import com.eduride.entity.Agency;
+import com.eduride.entity.Driver;
 import com.eduride.service.AgencyService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/agencies")
 @CrossOrigin(origins = "http://localhost:5173")
-
 public class AgencyController {
 
-    private final AgencyService agencyService;
+    private final AgencyService service;
 
-    public AgencyController(AgencyService agencyService) {
-        this.agencyService = agencyService;
+    public AgencyController(AgencyService service) {
+        this.service = service;
     }
 
+    // CREATE
     @PostMapping
     public Agency create(@RequestBody Agency agency) {
-        return agencyService.save(agency);
+        return service.create(agency);
     }
 
+    // READ ALL
     @GetMapping
     public List<Agency> getAll() {
-        return agencyService.findAll();
+        return service.findAll();
     }
 
+    // READ BY ID
     @GetMapping("/{id}")
     public Agency getById(@PathVariable Long id) {
-        return agencyService.findById(id);
+        return service.findById(id);
     }
 
+    // UPDATE
     @PutMapping("/{id}")
     public Agency update(@PathVariable Long id, @RequestBody Agency agency) {
-        agency.setId(id);
-        return agencyService.save(agency);
+        return service.update(id, agency);
     }
 
+    // DELETE
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        agencyService.delete(id);
+        service.delete(id);
     }
-  main
     
-    
-    
-   
-
-    @PostMapping("/signup")
-    public Agency signup(@RequestBody Agency agency) {
-        return agencyService.save(agency);
-    }
-
+ // LOGIN
     @PostMapping("/login")
-    public Agency login(@RequestBody Agency agency) {
-        return agencyService.login(
-                agency.getEmail(),
-                agency.getPassword()
-        );
+    public Agency login(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+        return service.login(email, password);
     }
-
- master
 }

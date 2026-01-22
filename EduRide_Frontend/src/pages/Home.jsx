@@ -28,7 +28,7 @@ function Home() {
 
         <button
           className="bg-green-600 text-white px-4 py-2"
-          onClick={() => navigate("/signup/agency")}
+          onClick={() => navigate("/signup")}
         >
           Signup
         </button>
