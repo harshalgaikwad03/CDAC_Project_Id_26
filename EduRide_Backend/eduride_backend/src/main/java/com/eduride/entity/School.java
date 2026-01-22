@@ -10,23 +10,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name="school")
+@Table(name = "school")
 @Getter
 @Setter
-
 @AttributeOverride(
-	    name = "phone",
-	    column = @Column(name = "contact")
-	)
+    name = "phone",
+    column = @Column(name = "contact", nullable = false, length = 15)
+)
 public class School extends BaseUserEntity {
-	
-	private String address;
-	
-	@ManyToOne
-	@JoinColumn(name = "agency_id")
-	private Agency agency;
-	
-	 public String getContact() { return phone; }
-	 public void setContact(String phone) { this.phone = phone; }
 
+    private String address;
+
+    @ManyToOne
+    @JoinColumn(name = "agency_id")
+    private Agency agency;
 }

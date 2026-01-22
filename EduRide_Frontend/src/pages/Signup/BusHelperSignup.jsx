@@ -16,92 +16,47 @@ function BusHelperSignup() {
 
   const [schools, setSchools] = useState([]);
   const [buses, setBuses] = useState([]);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     API.get("/schools").then(res => setSchools(res.data));
     API.get("/buses").then(res => setBuses(res.data));
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const submit = async () => {
-    if (!form.name || !form.phone || !form.email || !form.password || !form.schoolId) {
-      setError("Please fill all required fields");
-      return;
-    }
-
-    try {
-      await API.post("/bus-helpers/signup", form);
-      navigate("/login");
-    } catch (err) {
-      setError("Bus Helper registration failed");
-    }
+    await API.post("/helpers/signup", {
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      password: form.password,
+      school: { id: form.schoolId },
+      assignedBus: form.busId ? { id: form.busId } : null
+    });
+    navigate("/login");
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "auto" }}>
+    <div>
       <h2>Bus Helper Signup</h2>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <input name="name" placeholder="Name" onChange={handleChange} />
+      <input name="phone" placeholder="Phone" onChange={handleChange} />
+      <input name="email" placeholder="Email" onChange={handleChange} />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} />
 
-      <input
-        type="text"
-        name="name"
-        placeholder="Helper Name"
-        value={form.name}
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="phone"
-        placeholder="Phone Number"
-        value={form.phone}
-        onChange={handleChange}
-      />
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-      />
-
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-      />
-
-      <select
-        name="schoolId"
-        value={form.schoolId}
-        onChange={handleChange}
-      >
+      <select name="schoolId" onChange={handleChange}>
         <option value="">Select School</option>
         {schools.map(s => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
+          <option key={s.id} value={s.id}>{s.name}</option>
         ))}
       </select>
 
-      <select
-        name="busId"
-        value={form.busId}
-        onChange={handleChange}
-      >
+      <select name="busId" onChange={handleChange}>
         <option value="">Assign Bus (Optional)</option>
         {buses.map(b => (
-          <option key={b.id} value={b.id}>
-            {b.busNumber}
-          </option>
+          <option key={b.id} value={b.id}>{b.busNumber}</option>
         ))}
       </select>
 

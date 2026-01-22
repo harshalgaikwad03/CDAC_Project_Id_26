@@ -20,7 +20,7 @@ public class BusHelperController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/signup")
     public BusHelper create(@RequestBody BusHelper helper) {
         return service.create(helper);
     }

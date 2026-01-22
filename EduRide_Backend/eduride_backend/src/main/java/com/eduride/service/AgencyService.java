@@ -38,7 +38,7 @@ public class AgencyService {
         Agency existing = findById(id);
 
         existing.setName(updated.getName());
-        existing.setContact(updated.getContact());
+        existing.setPhone(updated.getPhone());
         existing.setEmail(updated.getEmail());
         existing.setAddress(updated.getAddress());
         existing.setPassword(updated.getPassword());

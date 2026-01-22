@@ -58,4 +58,8 @@ public class BusService {
     public List<Bus> findByAgency(Long agencyId) {
         return repo.findByAgencyId(agencyId);
     }
+    
+    public Bus getBusByDriver(Long driverId) {
+        return repo.findByDriverId(driverId).orElse(null);
+    }
 }

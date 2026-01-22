@@ -20,7 +20,7 @@ public class SchoolController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/signup")
     public School create(@RequestBody School school) {
         return service.create(school);
     }

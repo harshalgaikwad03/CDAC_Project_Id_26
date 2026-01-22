@@ -18,7 +18,7 @@ public class BusController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/signup")
     public Bus create(@RequestBody Bus bus) {
         return service.create(bus);
     }
@@ -58,5 +58,9 @@ public class BusController {
         return service.findByAgency(agencyId);
     }
     
+    @GetMapping("/driver/{driverId}")
+    public Bus getBusByDriver(@PathVariable Long driverId) {
+        return service.getBusByDriver(driverId);
+    }
     
 }

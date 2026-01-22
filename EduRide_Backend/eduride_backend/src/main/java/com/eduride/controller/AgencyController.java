@@ -20,7 +20,7 @@ public class AgencyController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/signup")
     public Agency create(@RequestBody Agency agency) {
         return service.create(agency);
     }

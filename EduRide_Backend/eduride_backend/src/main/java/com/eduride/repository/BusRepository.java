@@ -1,6 +1,7 @@
 package com.eduride.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,4 +13,5 @@ public interface BusRepository extends JpaRepository<Bus, Long>{
 
 	List<Bus> findByAgencyId(Long agencyId);
 
+	Optional<Bus> findByDriverId(Long driverId);
 }

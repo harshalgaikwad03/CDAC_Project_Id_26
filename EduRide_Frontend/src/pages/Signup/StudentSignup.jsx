@@ -11,6 +11,7 @@ function StudentSignup() {
     rollNo: "",
     email: "",
     password: "",
+    phone: "",
     address: "",
     passStatus: "ACTIVE",
     schoolId: "",
@@ -21,36 +22,62 @@ function StudentSignup() {
   const [buses, setBuses] = useState([]);
   const [error, setError] = useState("");
 
+  /* ---------------- LOAD SCHOOLS & BUSES ---------------- */
   useEffect(() => {
-    API.get("/schools").then(res => setSchools(res.data));
-    API.get("/buses").then(res => setBuses(res.data));
+    API.get("/schools")
+      .then(res => setSchools(res.data))
+      .catch(err => console.error(err));
+
+    API.get("/buses")
+      .then(res => setBuses(res.data))
+      .catch(err => console.error(err));
   }, []);
 
+  /* ---------------- HANDLE INPUT ---------------- */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  /* ---------------- SUBMIT FORM ---------------- */
   const submit = async () => {
+    setError("");
+
     if (
       !form.name ||
       !form.className ||
       !form.rollNo ||
       !form.email ||
       !form.password ||
+      !form.phone ||
       !form.schoolId
     ) {
       setError("Please fill all required fields");
       return;
     }
 
+    const payload = {
+      name: form.name,
+      className: form.className,
+      rollNo: form.rollNo,
+      email: form.email,
+      password: form.password,
+      phone: form.phone,
+      address: form.address,
+      passStatus: form.passStatus,
+      school: { id: form.schoolId },
+      assignedBus: form.busId ? { id: form.busId } : null
+    };
+
     try {
-      await API.post("/students/signup", form);
+      await API.post("/students/signup", payload);
       navigate("/login");
     } catch (err) {
+      console.error("Signup error:", err);
       setError("Student registration failed");
     }
   };
 
+  /* ---------------- UI ---------------- */
   return (
     <div style={{ maxWidth: "500px", margin: "auto" }}>
       <h2>Student Signup</h2>
@@ -94,6 +121,14 @@ function StudentSignup() {
         name="password"
         placeholder="Password"
         value={form.password}
+        onChange={handleChange}
+      />
+
+      <input
+        type="text"
+        name="phone"
+        placeholder="Phone Number"
+        value={form.phone}
         onChange={handleChange}
       />
 

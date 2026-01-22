@@ -7,10 +7,10 @@ function SchoolSignup() {
 
   const [form, setForm] = useState({
     name: "",
-    address: "",
     contact: "",
     email: "",
     password: "",
+    address: "",
     agencyId: ""
   });
 
@@ -18,84 +18,48 @@ function SchoolSignup() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    API.get("/agencies")
-      .then(res => setAgencies(res.data))
-      .catch(() => setError("Failed to load agencies"));
+    API.get("/agencies").then(res => setAgencies(res.data));
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const submit = async () => {
-    if (!form.name || !form.email || !form.password || !form.agencyId) {
-      setError("Please fill all required fields");
+    if (!form.name || !form.contact || !form.email || !form.password || !form.agencyId) {
+      setError("All required fields must be filled");
       return;
     }
 
     try {
-      await API.post("/schools/signup", form);
+      await API.post("/schools/signup", {
+        name: form.name,
+        phone: form.contact,
+        email: form.email,
+        password: form.password,
+        address: form.address,
+        agency: { id: form.agencyId }
+      });
       navigate("/login");
-    } catch (err) {
-      setError("Signup failed. Please try again.");
+    } catch {
+      setError("School registration failed");
     }
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "auto" }}>
+    <div>
       <h2>School Signup</h2>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <input
-        type="text"
-        name="name"
-        placeholder="School Name"
-        value={form.name}
-        onChange={handleChange}
-      />
+      <input name="name" placeholder="School Name" onChange={handleChange} />
+      <input name="contact" placeholder="Contact" onChange={handleChange} />
+      <input name="email" placeholder="Email" onChange={handleChange} />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} />
+      <textarea name="address" placeholder="Address" onChange={handleChange} />
 
-      <textarea
-        name="address"
-        placeholder="Address"
-        value={form.address}
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="contact"
-        placeholder="Contact Number"
-        value={form.contact}
-        onChange={handleChange}
-      />
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-      />
-
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-      />
-
-      <select
-        name="agencyId"
-        value={form.agencyId}
-        onChange={handleChange}
-      >
+      <select name="agencyId" onChange={handleChange}>
         <option value="">Select Agency</option>
-        {agencies.map(agency => (
-          <option key={agency.id} value={agency.id}>
-            {agency.name}
-          </option>
+        {agencies.map(a => (
+          <option key={a.id} value={a.id}>{a.name}</option>
         ))}
       </select>
 

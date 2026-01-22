@@ -63,6 +63,6 @@ public class FeedbackService {
     }
 
     public List<Feedback> findByHelper(Long helperId) {
-        return repo.findByHelperId(helperId);
+        return repo.findByBusHelper_Id(helperId);
     }
 }

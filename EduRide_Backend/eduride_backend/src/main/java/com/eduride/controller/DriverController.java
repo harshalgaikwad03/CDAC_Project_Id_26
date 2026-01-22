@@ -19,7 +19,7 @@ public class DriverController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/signup")
     public Driver create(@RequestBody Driver driver) {
         return service.create(driver);
     }

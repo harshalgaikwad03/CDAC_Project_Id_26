@@ -30,9 +30,11 @@ public class StudentStatus {
 	private String pickupStatus; // PENDING / PICKED / DROPPED
 	
 	@ManyToOne
-	@JoinColumn(name="updated_by")
+	@JoinColumn(name="student_id")
 	private Student student;
 	
+	 @ManyToOne
+	 @JoinColumn(name = "updated_by", nullable = false)
 	private BusHelper updatedBy;
 	
 	

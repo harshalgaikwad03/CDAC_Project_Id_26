@@ -9,74 +9,47 @@ function AgencySignup() {
     name: "",
     contact: "",
     email: "",
-    address: "",
-    password: ""
+    password: "",
+    address: ""
   });
 
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const submit = async () => {
-    if (!form.name || !form.email || !form.password) {
-      setError("Name, Email and Password are required");
+    setError("");
+
+    if (!form.name || !form.contact || !form.email || !form.password) {
+      setError("Please fill all required fields");
       return;
     }
 
     try {
-      await API.post("/agencies/signup", form);
+      await API.post("/agencies/signup", {
+        name: form.name,
+        phone: form.contact,
+        email: form.email,
+        password: form.password,
+        address: form.address
+      });
       navigate("/login");
-    } catch (err) {
-      setError("Signup failed. Email may already exist.");
+    } catch {
+      setError("Agency registration failed");
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto" }}>
+    <div>
       <h2>Agency Signup</h2>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <input
-        type="text"
-        name="name"
-        placeholder="Agency Name"
-        value={form.name}
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="contact"
-        placeholder="Contact Number"
-        value={form.contact}
-        onChange={handleChange}
-      />
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-      />
-
-      <textarea
-        name="address"
-        placeholder="Address"
-        value={form.address}
-        onChange={handleChange}
-      />
-
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-      />
+      <input name="name" placeholder="Agency Name" onChange={handleChange} />
+      <input name="contact" placeholder="Contact Number" onChange={handleChange} />
+      <input name="email" placeholder="Email" onChange={handleChange} />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} />
+      <textarea name="address" placeholder="Address" onChange={handleChange} />
 
       <button onClick={submit}>Register</button>
     </div>

@@ -8,10 +8,10 @@ import com.eduride.entity.Feedback;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
-	List<Feedback> findByBusId(Long busId);
+    List<Feedback> findByBusId(Long busId);
 
-	List<Feedback> findByDriverId(Long driverId);
+    List<Feedback> findByDriverId(Long driverId);
 
-	List<Feedback> findByHelperId(Long helperId);
+	List<Feedback> findByBusHelper_Id(Long helperId);
 
 }

@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import StudentDetail from "./services/StudentServices/StudentDetail";
+import DriverDetail from "./services/DriverServices/DriverDetail";
+import BusHelperDetail from "./services/BusHelperServices/BusHelperDetail";
 
 function Home() {
   const navigate = useNavigate();
@@ -15,7 +18,6 @@ function Home() {
   // 🔴 NOT LOGGED IN
   if (!userData) {
     return (
-      
       <div className="p-6 text-center">
         <h1 className="text-2xl font-bold mb-4">Welcome to EduRide</h1>
 
@@ -36,7 +38,7 @@ function Home() {
     );
   }
 
-  // 🟢 LOGGED IN
+   // 🟢 LOGGED IN
   const user = JSON.parse(userData);
 
   return (
@@ -55,11 +57,16 @@ function Home() {
       <br />
 
       <button
-        className="bg-red-600 text-white px-4 py-2"
+        className="bg-red-600 text-white px-4 py-2 mb-6"
         onClick={logout}
       >
         Logout
       </button>
+
+      {/* ROLE BASED DASHBOARD */}
+      {role?.toLowerCase() === "student" && <StudentDetail />}
+      {role?.toLowerCase() === "driver" && <DriverDetail />}
+      {role?.toLowerCase() === "bus_helper" && <BusHelperDetail />}
     </div>
   );
 }

@@ -20,10 +20,12 @@ public class StudentController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping("/signup")
     public Student create(@RequestBody Student student) {
+        System.out.println("STUDENT => " + student);
         return service.create(student);
     }
+
 
     // READ ALL
     @GetMapping

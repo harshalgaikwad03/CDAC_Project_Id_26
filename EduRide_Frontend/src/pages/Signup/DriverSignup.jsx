@@ -8,102 +8,47 @@ function DriverSignup() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    licenseNumber: "",
     email: "",
     password: "",
+    licenseNumber: "",
     agencyId: ""
   });
 
   const [agencies, setAgencies] = useState([]);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    API.get("/agencies")
-      .then(res => setAgencies(res.data))
-      .catch(() => setError("Failed to load agencies"));
+    API.get("/agencies").then(res => setAgencies(res.data));
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const submit = async () => {
-    if (
-      !form.name ||
-      !form.phone ||
-      !form.licenseNumber ||
-      !form.email ||
-      !form.password ||
-      !form.agencyId
-    ) {
-      setError("Please fill all required fields");
-      return;
-    }
-
-    try {
-      await API.post("/drivers/signup", form);
-      navigate("/login");
-    } catch (err) {
-      setError("Driver registration failed");
-    }
+    await API.post("/drivers/signup", {
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      password: form.password,
+      licenseNumber: form.licenseNumber,
+      agency: { id: form.agencyId }
+    });
+    navigate("/login");
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "auto" }}>
+    <div>
       <h2>Driver Signup</h2>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <input name="name" placeholder="Driver Name" onChange={handleChange} />
+      <input name="phone" placeholder="Phone" onChange={handleChange} />
+      <input name="email" placeholder="Email" onChange={handleChange} />
+      <input type="password" name="password" placeholder="Password" onChange={handleChange} />
+      <input name="licenseNumber" placeholder="License Number" onChange={handleChange} />
 
-      <input
-        type="text"
-        name="name"
-        placeholder="Driver Name"
-        value={form.name}
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="phone"
-        placeholder="Phone Number"
-        value={form.phone}
-        onChange={handleChange}
-      />
-
-      <input
-        type="text"
-        name="licenseNumber"
-        placeholder="License Number"
-        value={form.licenseNumber}
-        onChange={handleChange}
-      />
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-      />
-
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-      />
-
-      <select
-        name="agencyId"
-        value={form.agencyId}
-        onChange={handleChange}
-      >
+      <select name="agencyId" onChange={handleChange}>
         <option value="">Select Agency</option>
         {agencies.map(a => (
-          <option key={a.id} value={a.id}>
-            {a.name}
-          </option>
+          <option key={a.id} value={a.id}>{a.name}</option>
         ))}
       </select>
 

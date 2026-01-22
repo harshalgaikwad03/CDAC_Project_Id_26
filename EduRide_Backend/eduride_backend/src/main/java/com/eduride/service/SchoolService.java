@@ -39,7 +39,7 @@ public class SchoolService {
 
         existing.setName(updated.getName());
         existing.setAddress(updated.getAddress());
-        existing.setContact(updated.getContact());
+        existing.setPhone(updated.getPhone());
         existing.setEmail(updated.getEmail());
         existing.setPassword(updated.getPassword());
         existing.setAgency(updated.getAgency());
