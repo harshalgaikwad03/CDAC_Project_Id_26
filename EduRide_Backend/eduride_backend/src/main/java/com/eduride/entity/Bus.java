@@ -13,26 +13,27 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name="bus")
+@Table(name = "bus")
 @Getter
 @Setter
 public class Bus {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "bus_number")
+    @Column(name = "bus_number", nullable = false, unique = true)
     private String busNumber;
 
+    @Column(nullable = false)
     private int capacity;
-	
-	@ManyToOne
-    @JoinColumn(name = "agency_id")
+
+    @ManyToOne
+    @JoinColumn(name = "agency_id", nullable = false)
     private Agency agency;
 
     @ManyToOne
-    @JoinColumn(name = "school_id")
+    @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
     @OneToOne

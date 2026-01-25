@@ -1,11 +1,13 @@
 package com.eduride.controller;
 
+import com.eduride.dto.dashboard.DriverDashboardSummaryDTO;
 import com.eduride.entity.Driver;
 import com.eduride.service.DriverService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/drivers")
@@ -18,47 +20,47 @@ public class DriverController {
         this.service = service;
     }
 
-    // CREATE
+    // ─── Existing unchanged ───
     @PostMapping("/signup")
     public Driver create(@RequestBody Driver driver) {
         return service.create(driver);
     }
 
-    // READ ALL
     @GetMapping
+    @PreAuthorize("hasRole('AGENCY')")
     public List<Driver> getAll() {
         return service.findAll();
     }
 
-    // READ BY ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('DRIVER')")
     public Driver getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
-    // UPDATE
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('DRIVER')")
     public Driver update(@PathVariable Long id, @RequestBody Driver driver) {
         return service.update(id, driver);
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY')")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 
-    
     @GetMapping("/agency/{agencyId}")
+    @PreAuthorize("hasRole('AGENCY')")
     public List<Driver> getByAgency(@PathVariable Long agencyId) {
         return service.findByAgency(agencyId);
     }
-    
-    // LOGIN
-    @PostMapping("/login")
-    public Driver login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-        return service.login(email, password);
+
+    // ─── NEW: Dashboard summary for Driver ───
+    @GetMapping("/dashboard/summary")
+    @PreAuthorize("hasRole('DRIVER')")
+    public DriverDashboardSummaryDTO getDriverDashboardSummary() {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.getDriverDashboardSummary(currentEmail);
     }
 }

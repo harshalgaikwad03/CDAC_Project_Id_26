@@ -1,12 +1,13 @@
 package com.eduride.controller;
 
-import com.eduride.entity.Driver;
+import com.eduride.dto.dashboard.SchoolDashboardSummaryDTO;
 import com.eduride.entity.School;
 import com.eduride.service.SchoolService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/schools")
@@ -19,46 +20,47 @@ public class SchoolController {
         this.service = service;
     }
 
-    // CREATE
+    // ─── Existing endpoints unchanged ───
     @PostMapping("/signup")
     public School create(@RequestBody School school) {
         return service.create(school);
     }
 
-    // READ ALL
     @GetMapping
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public List<School> getAll() {
         return service.findAll();
     }
 
-    // READ BY ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public School getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
-    // UPDATE
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public School update(@PathVariable Long id, @RequestBody School school) {
         return service.update(id, school);
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY')")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 
-   
     @GetMapping("/agency/{agencyId}")
+    @PreAuthorize("hasRole('AGENCY')")
     public List<School> getByAgency(@PathVariable Long agencyId) {
         return service.findByAgency(agencyId);
     }
- // LOGIN
-    @PostMapping("/login")
-    public School login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-        return service.login(email, password);
+
+    // ─── NEW: Dashboard summary for School ───
+    @GetMapping("/dashboard/summary")
+    @PreAuthorize("hasRole('SCHOOL')")
+    public SchoolDashboardSummaryDTO getSchoolDashboardSummary() {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.getSchoolDashboardSummary(currentEmail);
     }
 }

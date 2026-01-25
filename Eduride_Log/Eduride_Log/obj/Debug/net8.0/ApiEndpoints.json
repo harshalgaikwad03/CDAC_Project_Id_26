@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "Eduride_Log.Controllers.LogController",
+    "Method": "Log",
+    "RelativePath": "api/logs",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Eduride_Log.Models.LogRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

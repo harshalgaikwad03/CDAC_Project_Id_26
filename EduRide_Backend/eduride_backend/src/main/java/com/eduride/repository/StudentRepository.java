@@ -1,18 +1,18 @@
 package com.eduride.repository;
 
+import com.eduride.entity.Student;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+public interface StudentRepository extends JpaRepository<Student, Long> {
 
-import com.eduride.entity.Student;
+    Optional<Student> findByEmail(String email);
 
-public interface StudentRepository extends JpaRepository<Student, Long>{
+    List<Student> findBySchoolId(Long schoolId);
 
-	List<Student> findBySchoolId(Long schoolId);
-
-	List<Student> findByAssignedBusId(Long busId);
-
-	Optional<Student> findByEmail(String email);
-
+    List<Student> findByAssignedBusId(Long busId);
+    
 }

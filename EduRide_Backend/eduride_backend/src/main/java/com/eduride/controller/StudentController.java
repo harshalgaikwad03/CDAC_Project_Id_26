@@ -1,12 +1,14 @@
 package com.eduride.controller;
 
-import com.eduride.entity.Driver;
 import com.eduride.entity.Student;
 import com.eduride.service.StudentService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/students")
@@ -19,54 +21,71 @@ public class StudentController {
         this.service = service;
     }
 
-    // CREATE
+    /**
+     * Returns the currently authenticated student's full profile.
+     * Uses SecurityContext to get email from JWT → no need for ID in URL.
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    public Student getCurrentStudent() {
+        // Get the authenticated user's email from JWT
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        return service.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Student profile not found for email: " + email));
+    }
+
+    // ────────────────────────────────────────────────
+    //                  SIGNUP (PUBLIC)
+    // ────────────────────────────────────────────────
     @PostMapping("/signup")
     public Student create(@RequestBody Student student) {
-        System.out.println("STUDENT => " + student);
         return service.create(student);
     }
 
-
-    // READ ALL
+    // ────────────────────────────────────────────────
+    //                  ADMIN / AGENCY / SCHOOL
+    // ────────────────────────────────────────────────
     @GetMapping
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public List<Student> getAll() {
         return service.findAll();
     }
 
-    // READ BY ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
     public Student getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
-    // UPDATE
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
     public Student update(@PathVariable Long id, @RequestBody Student student) {
         return service.update(id, student);
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 
-    
+    // ────────────────────────────────────────────────
+    //                  FILTERED QUERIES
+    // ────────────────────────────────────────────────
     @GetMapping("/school/{schoolId}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
     public List<Student> getBySchool(@PathVariable Long schoolId) {
         return service.findBySchool(schoolId);
     }
 
     @GetMapping("/bus/{busId}")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
     public List<Student> getByBus(@PathVariable Long busId) {
         return service.findByBus(busId);
-    }
-    
- // LOGIN
-    @PostMapping("/login")
-    public Student login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-        return service.login(email, password);
     }
 }

@@ -9,8 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
-	List<Driver> findByAgencyId(Long agencyId);
+    List<Driver> findByAgencyId(Long agencyId);
 
-	Optional<Driver> findByEmail(String email);
-
+    Optional<Driver> findByEmail(String email);
 }

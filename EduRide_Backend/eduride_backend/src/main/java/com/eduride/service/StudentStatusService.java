@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentStatusService {
@@ -19,7 +20,7 @@ public class StudentStatusService {
 
     // CREATE
     public StudentStatus create(StudentStatus status) {
-        status.setDate(LocalDate.now());   // auto set date
+        status.setDate(LocalDate.now());   // auto set current date
         return repo.save(status);
     }
 
@@ -31,7 +32,7 @@ public class StudentStatusService {
     // READ BY ID
     public StudentStatus findById(Long id) {
         return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Student status not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student status not found with id: " + id));
     }
 
     // UPDATE
@@ -41,17 +42,28 @@ public class StudentStatusService {
         existing.setPickupStatus(updated.getPickupStatus());
         existing.setStudent(updated.getStudent());
         existing.setUpdatedBy(updated.getUpdatedBy());
+        // You might want to update date or other fields depending on your business rules
 
         return repo.save(existing);
     }
 
     // DELETE
     public void delete(Long id) {
+        if (!repo.existsById(id)) {
+            throw new ResourceNotFoundException("Student status not found with id: " + id);
+        }
         repo.deleteById(id);
     }
 
-    // REQUIRED API
+    // Find all statuses for a student
     public List<StudentStatus> findByStudent(Long studentId) {
         return repo.findByStudentId(studentId);
+    }
+
+    // NEW: Get today's status for a student (returns null if not found)
+    public StudentStatus findTodayStatusForStudent(Long studentId) {
+        LocalDate today = LocalDate.now();
+        Optional<StudentStatus> status = repo.findByStudentIdAndDate(studentId, today);
+        return status.orElse(null);
     }
 }

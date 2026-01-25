@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.eduride.entity.Bus;
 
-public interface BusRepository extends JpaRepository<Bus, Long>{
+public interface BusRepository extends JpaRepository<Bus, Long> {
 
-	List<Bus> findBySchoolId(Long schoolId);
+    List<Bus> findBySchoolId(Long schoolId);
 
-	List<Bus> findByAgencyId(Long agencyId);
+    List<Bus> findByAgencyId(Long agencyId);
 
-	Optional<Bus> findByDriverId(Long driverId);
+    Optional<Bus> findByDriverId(Long driverId);
 }

@@ -8,7 +8,5 @@ import com.eduride.entity.Agency;
 
 public interface AgencyRepository extends JpaRepository<Agency, Long> {
 
-	
-	Optional<Agency> findByEmail(String email);
-
+    Optional<Agency> findByEmail(String email);
 }
