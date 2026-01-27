@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -63,27 +64,27 @@ public class StudentStatusController {
         return statusService.findByStudent(studentId);
     }
 
+    // FIXED: Proper Optional handling with type-safe return
     @GetMapping("/today/{studentId}")
     @PreAuthorize("hasAnyRole('AGENCY','SCHOOL','STUDENT')")
     public ResponseEntity<StudentStatus> getTodayStatus(@PathVariable Long studentId) {
         checkStudentAccess(studentId);
 
-        StudentStatus todayStatus = statusService.findTodayStatusForStudent(studentId);
-
-        if (todayStatus == null) {
-            return ResponseEntity.noContent().build(); // 204 No Content
-            // Alternative: throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No status record found for today");
-        }
-
-        return ResponseEntity.ok(todayStatus);
+        return statusService.findTodayStatusForStudent(studentId)
+                .map(ResponseEntity::ok)  // Found → 200 OK + body
+                .orElseGet(() -> ResponseEntity.noContent().build());  // Not found → 204 No Content
     }
 
-    // Security helper: Students can only access their own data
-    private void checkStudentAccess(Long studentId) {
-        String currentEmail = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
+    // Get all student statuses for a school on today's date
+    @GetMapping("/school/{schoolId}/today")
+    @PreAuthorize("hasRole('SCHOOL')")
+    public List<StudentStatus> getTodayBySchool(@PathVariable Long schoolId) {
+        LocalDate today = LocalDate.now();
+        return statusService.findBySchoolIdAndDate(schoolId, today);
+    }
 
+    private void checkStudentAccess(Long studentId) {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         String role = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getAuthorities()
@@ -94,9 +95,10 @@ public class StudentStatusController {
         if ("ROLE_STUDENT".equals(role)) {
             Student student = studentService.findById(studentId);
             if (student == null || !currentEmail.equals(student.getEmail())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to view this student's data");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "You are not authorized to view this student's data");
             }
         }
-        // AGENCY and SCHOOL roles can view any student
+        // AGENCY and SCHOOL can view any
     }
 }

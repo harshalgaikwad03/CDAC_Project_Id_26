@@ -1,65 +1,176 @@
 package com.eduride.service;
 
-import com.eduride.entity.Bus;
+import com.eduride.entity.*;
 import com.eduride.exception.ResourceNotFoundException;
-import com.eduride.repository.BusRepository;
+import com.eduride.repository.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class BusService {
 
-    private final BusRepository repo;
+    private final BusRepository busRepository;
+    private final AgencyRepository agencyRepository;
+    private final DriverRepository driverRepository;
+    private final SchoolRepository schoolRepository;
+    private final BusHelperRepository helperRepository;
 
-    public BusService(BusRepository repo) {
-        this.repo = repo;
+    public BusService(
+            BusRepository busRepository,
+            AgencyRepository agencyRepository,
+            DriverRepository driverRepository,
+            SchoolRepository schoolRepository,
+            BusHelperRepository helperRepository
+    ) {
+        this.busRepository = busRepository;
+        this.agencyRepository = agencyRepository;
+        this.driverRepository = driverRepository;
+        this.schoolRepository = schoolRepository;
+        this.helperRepository = helperRepository;
     }
 
-    // CREATE
+    // ─────────────────────────────────────────────
+    // CREATE BUS
+    // ─────────────────────────────────────────────
     public Bus create(Bus bus) {
-        return repo.save(bus);
+        Agency agency = getLoggedInAgency();
+        bus.setAgency(agency);
+
+        assignSchool(bus, agency);
+        assignDriver(bus, agency, null);
+
+        return busRepository.save(bus);
     }
 
-    // READ ALL
-    public List<Bus> findAll() {
-        return repo.findAll();
-    }
-
-    // READ BY ID
-    public Bus findById(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
-    }
-
-    // UPDATE
+    // ─────────────────────────────────────────────
+    // UPDATE BUS (✔ FULLY FIXED)
+    // ─────────────────────────────────────────────
     public Bus update(Long id, Bus updated) {
         Bus existing = findById(id);
+        Agency agency = getLoggedInAgency();
 
         existing.setBusNumber(updated.getBusNumber());
         existing.setCapacity(updated.getCapacity());
-        existing.setAgency(updated.getAgency());
+
+        // 🔥 CRITICAL: copy incoming relations
         existing.setSchool(updated.getSchool());
         existing.setDriver(updated.getDriver());
 
-        return repo.save(existing);
+        // Validate & assign safely
+        assignSchool(existing, agency);
+        assignDriver(existing, agency, existing.getId());
+
+        return busRepository.save(existing);
     }
 
-    // DELETE
-    public void delete(Long id) {
-        repo.deleteById(id);
+    // ─────────────────────────────────────────────
+    // HELPER METHODS
+    // ─────────────────────────────────────────────
+    private Agency getLoggedInAgency() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+
+        Agency agency = agencyRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency not found"));
+
+        if (!agency.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency inactive");
+        }
+        return agency;
     }
 
-    // CUSTOM APIs
-    public List<Bus> findBySchool(Long schoolId) {
-        return repo.findBySchoolId(schoolId);
+    private void assignSchool(Bus bus, Agency agency) {
+        if (bus.getSchool() != null && bus.getSchool().getId() != null) {
+            School school = schoolRepository.findById(bus.getSchool().getId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("School not found"));
+
+            if (!school.getAgency().getId().equals(agency.getId())) {
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "School does not belong to your agency"
+                );
+            }
+            bus.setSchool(school);
+        } else {
+            bus.setSchool(null);
+        }
+    }
+
+    private void assignDriver(Bus bus, Agency agency, Long currentBusId) {
+        if (bus.getDriver() != null && bus.getDriver().getId() != null) {
+            Long driverId = bus.getDriver().getId();
+
+            Driver driver = driverRepository.findById(driverId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Driver not found"));
+
+            if (!driver.getAgency().getId().equals(agency.getId())) {
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Driver does not belong to your agency"
+                );
+            }
+
+            busRepository.findByDriverId(driverId).ifPresent(otherBus -> {
+                if (currentBusId == null || !otherBus.getId().equals(currentBusId)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Driver already assigned to another bus"
+                    );
+                }
+            });
+
+            bus.setDriver(driver);
+        } else {
+            bus.setDriver(null);
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    // OTHER METHODS
+    // ─────────────────────────────────────────────
+    public Bus assignHelper(Long busId, Long helperId) {
+        Bus bus = findById(busId);
+        BusHelper helper = helperRepository.findById(helperId)
+                .orElseThrow(() -> new ResourceNotFoundException("Helper not found"));
+        helper.setAssignedBus(bus);
+        helperRepository.save(helper);
+        return bus;
+    }
+
+    public List<Bus> findAll() {
+        return busRepository.findAll();
+    }
+
+    public Bus findById(Long id) {
+        return busRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
     }
 
     public List<Bus> findByAgency(Long agencyId) {
-        return repo.findByAgencyId(agencyId);
+        return busRepository.findByAgencyId(agencyId);
     }
-    
+
+    public List<Bus> findBySchool(Long schoolId) {
+        return busRepository.findBySchoolId(schoolId);
+    }
+
     public Bus getBusByDriver(Long driverId) {
-        return repo.findByDriverId(driverId).orElse(null);
+        return busRepository.findByDriverId(driverId).orElse(null);
+    }
+
+    public void delete(Long id) {
+        if (!busRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Bus not found");
+        }
+        busRepository.deleteById(id);
     }
 }

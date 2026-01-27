@@ -1,5 +1,6 @@
 package com.eduride.controller;
 
+import com.eduride.dto.BusHelperUpdateDTO;
 import com.eduride.dto.dashboard.BusHelperDashboardSummaryDTO;
 import com.eduride.entity.BusHelper;
 import com.eduride.service.BusHelperService;
@@ -20,7 +21,6 @@ public class BusHelperController {
         this.service = service;
     }
 
-    // ─── Existing unchanged ───
     @PostMapping("/signup")
     public BusHelper create(@RequestBody BusHelper helper) {
         return service.create(helper);
@@ -38,10 +38,14 @@ public class BusHelperController {
         return service.findById(id);
     }
 
+    // ✅ ONLY CHANGE IS HERE
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('HELPER')")
-    public BusHelper update(@PathVariable Long id, @RequestBody BusHelper helper) {
-        return service.update(id, helper);
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
+    public BusHelper update(
+            @PathVariable Long id,
+            @RequestBody BusHelperUpdateDTO dto
+    ) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
@@ -62,11 +66,10 @@ public class BusHelperController {
         return service.findByBus(busId);
     }
 
-    // ─── NEW: Dashboard summary for Bus Helper ───
     @GetMapping("/dashboard/summary")
     @PreAuthorize("hasRole('HELPER')")
     public BusHelperDashboardSummaryDTO getBusHelperDashboardSummary() {
-        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        return service.getBusHelperDashboardSummary(currentEmail);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.getBusHelperDashboardSummary(email);
     }
 }

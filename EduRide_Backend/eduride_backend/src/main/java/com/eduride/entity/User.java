@@ -21,7 +21,7 @@ public class User {
     @Column(nullable = false, length = 15)
     private String phone; // Moved from BaseUserEntity
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = true)
     private String email;
 
     @Column(nullable = false)

@@ -8,7 +8,6 @@ import com.eduride.repository.BusRepository;
 import com.eduride.repository.SchoolRepository;
 import com.eduride.repository.StudentRepository;
 import com.eduride.repository.StudentStatusRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +38,6 @@ public class SchoolService {
         this.studentStatusRepository = studentStatusRepository;
     }
 
-    // ────────────────────────────────────────────────
-    // Existing methods – unchanged
-    // ────────────────────────────────────────────────
     public School create(School school) {
         school.setRole(Role.SCHOOL);
         school.setPassword(passwordEncoder.encode(school.getPassword()));
@@ -54,11 +50,16 @@ public class SchoolService {
 
     public School findById(Long id) {
         return repo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("School not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("School not found with id: " + id));
+    }
+
+    public Optional<School> findByEmail(String email) {
+        return repo.findByEmail(email);
     }
 
     public School update(Long id, School updated) {
         School existing = findById(id);
+
         existing.setName(updated.getName());
         existing.setPhone(updated.getPhone());
         existing.setEmail(updated.getEmail());
@@ -68,10 +69,14 @@ public class SchoolService {
         if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
             existing.setPassword(passwordEncoder.encode(updated.getPassword()));
         }
+
         return repo.save(existing);
     }
 
     public void delete(Long id) {
+        if (!repo.existsById(id)) {
+            throw new ResourceNotFoundException("School not found with id: " + id);
+        }
         repo.deleteById(id);
     }
 
@@ -79,44 +84,42 @@ public class SchoolService {
         return repo.findByAgencyId(agencyId);
     }
 
-    public Optional<School> findByEmail(String email) {
-        return repo.findByEmail(email);
-    }
-
-    // ────────────────────────────────────────────────
-    // NEW: School-specific dashboard summary
-    // ────────────────────────────────────────────────
     public SchoolDashboardSummaryDTO getSchoolDashboardSummary(String currentEmail) {
         School school = findByEmail(currentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated school not found"));
 
         Long schoolId = school.getId();
-
-        // Total students in this school
-        long totalStudents = studentRepository.findBySchoolId(schoolId).size();
-
-        // Assigned buses
-        long assignedBuses = busRepository.findBySchoolId(schoolId).size();
-
-        // Today's attendance (assuming PickupStatus is String or enum)
         LocalDate today = LocalDate.now();
 
-        // Count students who have a status record today
-        long studentsWithStatusToday = studentStatusRepository.countByStudent_School_IdAndDate(
-                schoolId, today);
+        long totalStudents = studentRepository.countBySchoolId(schoolId);
+        long totalBuses = busRepository.countBySchoolId(schoolId);
 
-        // Count present (adjust "PRESENT" / "Picked Up" according to your actual field value)
-        long presentCount = studentStatusRepository.countByStudent_School_IdAndDateAndPickupStatus(
-                schoolId, today, "PRESENT");  // ← CHANGE THIS STRING to match your real value
+        long presentCount = studentStatusRepository.countByStudentSchoolIdAndDateAndPickupStatus(
+                schoolId, today, "PRESENT"   // ← IMPORTANT: change this string to match your actual PickupStatus value
+        );
+
+        long studentsWithStatusToday = studentStatusRepository.countByStudentSchoolIdAndDate(
+                schoolId, today
+        );
+        long absentCount = studentsWithStatusToday - presentCount;
 
         double attendancePercentage = totalStudents > 0
                 ? (presentCount * 100.0) / totalStudents
                 : 0.0;
 
+        // Use inherited getName() from User — no need for getSchoolName()
+        String displayName = school.getName();
+        if (displayName == null || displayName.trim().isEmpty()) {
+            displayName = "Unnamed School";
+        }
+
         return new SchoolDashboardSummaryDTO(
+                displayName,
                 totalStudents,
-                assignedBuses,
-                Math.round(attendancePercentage * 10.0) / 10.0  // 1 decimal place
+                totalBuses,
+                presentCount,
+                absentCount,
+                attendancePercentage
         );
     }
 }

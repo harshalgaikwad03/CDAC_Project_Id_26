@@ -107,4 +107,8 @@ public class DriverService {
                 pickedUpCount
         );
     }
+    
+    public List<Driver> findUnassignedDriversByAgency(Long agencyId) {
+        return repo.findUnassignedDriversByAgency(agencyId);
+    }
 }

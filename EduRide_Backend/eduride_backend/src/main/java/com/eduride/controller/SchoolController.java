@@ -1,11 +1,17 @@
 package com.eduride.controller;
 
 import com.eduride.dto.dashboard.SchoolDashboardSummaryDTO;
+import com.eduride.entity.Agency;
 import com.eduride.entity.School;
+import com.eduride.service.AgencyService;
 import com.eduride.service.SchoolService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -15,52 +21,89 @@ import java.util.List;
 public class SchoolController {
 
     private final SchoolService service;
+    private final AgencyService agencyService;
 
-    public SchoolController(SchoolService service) {
+    public SchoolController(SchoolService service, AgencyService agencyService) {
         this.service = service;
+        this.agencyService = agencyService;
     }
 
-    // ─── Existing endpoints unchanged ───
+    /**
+     * Public signup endpoint - anyone can register a school
+     */
     @PostMapping("/signup")
-    public School create(@RequestBody School school) {
-        return service.create(school);
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<School> create(@Valid @RequestBody School school) {
+        School created = service.create(school);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    /**
+     * Public GET - used for dropdowns in various signup forms
+     * (bus-helper, driver, etc.)
+     */
     @GetMapping
-    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
+    @PreAuthorize("permitAll()")
     public List<School> getAll() {
         return service.findAll();
     }
 
+    /**
+     * Get single school by ID - protected
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public School getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
+    /**
+     * Update school - protected
+     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
-    public School update(@PathVariable Long id, @RequestBody School school) {
+    public School update(@PathVariable Long id, @Valid @RequestBody School school) {
         return service.update(id, school);
     }
 
+    /**
+     * Delete school - only AGENCY
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 
+    /**
+     * Get schools under a specific agency - only the agency itself
+     */
     @GetMapping("/agency/{agencyId}")
     @PreAuthorize("hasRole('AGENCY')")
     public List<School> getByAgency(@PathVariable Long agencyId) {
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        Agency current = agencyService.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency not found"));
+
+        if (!current.getId().equals(agencyId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only view your own schools");
+        }
+
         return service.findByAgency(agencyId);
     }
 
-    // ─── NEW: Dashboard summary for School ───
+    /**
+     * School dashboard summary - only for logged-in school user
+     */
     @GetMapping("/dashboard/summary")
     @PreAuthorize("hasRole('SCHOOL')")
-    public SchoolDashboardSummaryDTO getSchoolDashboardSummary() {
+    public ResponseEntity<SchoolDashboardSummaryDTO> getDashboardSummary() {
         String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        return service.getSchoolDashboardSummary(currentEmail);
+        
+        SchoolDashboardSummaryDTO summary = service.getSchoolDashboardSummary(currentEmail);
+        
+        return ResponseEntity.ok(summary);
     }
 }

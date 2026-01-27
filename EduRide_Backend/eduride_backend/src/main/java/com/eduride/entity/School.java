@@ -1,11 +1,7 @@
 package com.eduride.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,22 +9,15 @@ import lombok.Setter;
 @Table(name = "school")
 @Getter
 @Setter
-@PrimaryKeyJoinColumn(name = "id") // ✅ Links School ID to User ID
-public class School extends User { // ✅ Now extends User (not BaseUserEntity)
-
-    // REMOVED @AttributeOverride: We must use the standard 'phone' column from the User table.
+@PrimaryKeyJoinColumn(name = "id")
+public class School extends User {
 
     @Column(nullable = false)
     private String address;
 
+    // Accepts agency on WRITE, hides it on READ
     @ManyToOne
     @JoinColumn(name = "agency_id", nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Agency agency;
-
-	public Object getSchoolName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-    
-    // Inherits name, email, phone, password, role, active from User
 }
