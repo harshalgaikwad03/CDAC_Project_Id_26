@@ -1,12 +1,13 @@
 package com.eduride.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-//com.eduride.dto.BusHelperUpdateDTO.java
-@Data
+@Getter
+@Setter
 public class BusHelperUpdateDTO {
- private String name;
- private String phone;
- private Long assignedBusId; // ← only ID
- // NO email, password, role, etc.
+
+    private String name;
+    private String phone;
+    private Long assignedBusId; // ← THIS IS KEY
 }

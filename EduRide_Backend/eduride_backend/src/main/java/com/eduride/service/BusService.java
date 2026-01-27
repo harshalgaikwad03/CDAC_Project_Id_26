@@ -36,34 +36,61 @@ public class BusService {
     }
 
     // ─────────────────────────────────────────────
-    // CREATE BUS (School + Driver optional)
+    // CREATE BUS
     // ─────────────────────────────────────────────
     public Bus create(Bus bus) {
+        Agency agency = getLoggedInAgency();
+        bus.setAgency(agency);
 
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
+        assignSchool(bus, agency);
+        assignDriver(bus, agency, null);
+
+        return busRepository.save(bus);
+    }
+
+    // ─────────────────────────────────────────────
+    // UPDATE BUS (✔ FULLY FIXED)
+    // ─────────────────────────────────────────────
+    public Bus update(Long id, Bus updated) {
+        Bus existing = findById(id);
+        Agency agency = getLoggedInAgency();
+
+        existing.setBusNumber(updated.getBusNumber());
+        existing.setCapacity(updated.getCapacity());
+
+        // 🔥 CRITICAL: copy incoming relations
+        existing.setSchool(updated.getSchool());
+        existing.setDriver(updated.getDriver());
+
+        // Validate & assign safely
+        assignSchool(existing, agency);
+        assignDriver(existing, agency, existing.getId());
+
+        return busRepository.save(existing);
+    }
+
+    // ─────────────────────────────────────────────
+    // HELPER METHODS
+    // ─────────────────────────────────────────────
+    private Agency getLoggedInAgency() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
 
         Agency agency = agencyRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency not found")
-                );
+                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency not found"));
 
         if (!agency.isActive()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency account inactive");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency inactive");
         }
+        return agency;
+    }
 
-        // 🔐 Enforce agency from token
-        bus.setAgency(agency);
-
-        // ───────────── SCHOOL ASSIGNMENT ─────────────
+    private void assignSchool(Bus bus, Agency agency) {
         if (bus.getSchool() != null && bus.getSchool().getId() != null) {
-
             School school = schoolRepository.findById(bus.getSchool().getId())
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("School not found")
-                    );
+                            new ResourceNotFoundException("School not found"));
 
             if (!school.getAgency().getId().equals(agency.getId())) {
                 throw new ResponseStatusException(
@@ -71,22 +98,19 @@ public class BusService {
                         "School does not belong to your agency"
                 );
             }
-
-            // ✅ Attach managed entity
             bus.setSchool(school);
         } else {
             bus.setSchool(null);
         }
+    }
 
-        // ───────────── DRIVER ASSIGNMENT ─────────────
+    private void assignDriver(Bus bus, Agency agency, Long currentBusId) {
         if (bus.getDriver() != null && bus.getDriver().getId() != null) {
-
             Long driverId = bus.getDriver().getId();
 
             Driver driver = driverRepository.findById(driverId)
                     .orElseThrow(() ->
-                            new ResourceNotFoundException("Driver not found")
-                    );
+                            new ResourceNotFoundException("Driver not found"));
 
             if (!driver.getAgency().getId().equals(agency.getId())) {
                 throw new ResponseStatusException(
@@ -95,57 +119,40 @@ public class BusService {
                 );
             }
 
-            // 🚫 Prevent OneToOne violation
-            if (busRepository.findByDriverId(driverId).isPresent()) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Driver already assigned to another bus"
-                );
-            }
+            busRepository.findByDriverId(driverId).ifPresent(otherBus -> {
+                if (currentBusId == null || !otherBus.getId().equals(currentBusId)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Driver already assigned to another bus"
+                    );
+                }
+            });
 
-            // ✅ Attach managed entity
             bus.setDriver(driver);
         } else {
             bus.setDriver(null);
         }
-
-        // ✅ Persist
-        return busRepository.save(bus);
     }
 
     // ─────────────────────────────────────────────
-    // ASSIGN HELPER
+    // OTHER METHODS
     // ─────────────────────────────────────────────
     public Bus assignHelper(Long busId, Long helperId) {
-
-        Bus bus = busRepository.findById(busId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Bus not found")
-                );
-
+        Bus bus = findById(busId);
         BusHelper helper = helperRepository.findById(helperId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Helper not found")
-                );
-
+                .orElseThrow(() -> new ResourceNotFoundException("Helper not found"));
         helper.setAssignedBus(bus);
         helperRepository.save(helper);
-
         return bus;
     }
 
-    // ─────────────────────────────────────────────
-    // READ
-    // ─────────────────────────────────────────────
     public List<Bus> findAll() {
         return busRepository.findAll();
     }
 
     public Bus findById(Long id) {
         return busRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Bus not found")
-                );
+                .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
     }
 
     public List<Bus> findByAgency(Long agencyId) {
@@ -160,22 +167,6 @@ public class BusService {
         return busRepository.findByDriverId(driverId).orElse(null);
     }
 
-    // ─────────────────────────────────────────────
-    // UPDATE (No driver change here)
-    // ─────────────────────────────────────────────
-    public Bus update(Long id, Bus updated) {
-        Bus existing = findById(id);
-
-        existing.setBusNumber(updated.getBusNumber());
-        existing.setCapacity(updated.getCapacity());
-        existing.setSchool(updated.getSchool());
-
-        return busRepository.save(existing);
-    }
-
-    // ─────────────────────────────────────────────
-    // DELETE
-    // ─────────────────────────────────────────────
     public void delete(Long id) {
         if (!busRepository.existsById(id)) {
             throw new ResourceNotFoundException("Bus not found");

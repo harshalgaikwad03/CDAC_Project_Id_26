@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/students")
@@ -43,6 +42,16 @@ public class StudentController {
         return service.findAll();
     }
 
+    // ✅ NEW: ONLY STUDENTS OF LOGGED-IN SCHOOL
+    @GetMapping("/school/me")
+    @PreAuthorize("hasRole('SCHOOL')")
+    public List<Student> getStudentsOfLoggedInSchool() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+        return service.findByLoggedInSchool(email);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
     public Student getById(@PathVariable Long id) {
@@ -62,13 +71,13 @@ public class StudentController {
     }
 
     @GetMapping("/school/{schoolId}")
-    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
+    @PreAuthorize("hasRole('AGENCY')")
     public List<Student> getBySchool(@PathVariable Long schoolId) {
         return service.findBySchool(schoolId);
     }
 
     @GetMapping("/bus/{busId}")
-    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
+    @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
     public List<Student> getByBus(@PathVariable Long busId) {
         return service.findByBus(busId);
     }
