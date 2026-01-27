@@ -1,1 +1,19 @@
-/.metadata/
+# IDE
+.metadata/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend
+target/
+
+# Frontend
+node_modules/
+dist/
+
+# Logs
+*.log
