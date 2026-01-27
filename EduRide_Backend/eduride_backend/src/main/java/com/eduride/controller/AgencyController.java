@@ -19,14 +19,15 @@ public class AgencyController {
         this.service = service;
     }
 
-    // ─── Your existing endpoints (unchanged) ───
     @PostMapping("/signup")
+    @PreAuthorize("permitAll()")
     public Agency create(@RequestBody Agency agency) {
         return service.create(agency);
     }
 
+    // FIXED: Public for dropdown during signup
     @GetMapping
-    @PreAuthorize("hasRole('AGENCY')")
+    @PreAuthorize("permitAll()")
     public List<Agency> getAll() {
         return service.findAll();
     }
@@ -49,7 +50,6 @@ public class AgencyController {
         service.delete(id);
     }
 
-    // ─── NEW: Dashboard summary for Agency ───
     @GetMapping("/dashboard/summary")
     @PreAuthorize("hasRole('AGENCY')")
     public AgencyDashboardSummaryDTO getAgencyDashboardSummary() {

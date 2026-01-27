@@ -63,4 +63,11 @@ public class DriverController {
         String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return service.getDriverDashboardSummary(currentEmail);
     }
+    
+    @GetMapping("/agency/{agencyId}/unassigned")
+    @PreAuthorize("hasRole('AGENCY')")
+    public List<Driver> getUnassignedDrivers(@PathVariable Long agencyId) {
+        return service.findUnassignedDriversByAgency(agencyId);
+    }
+
 }

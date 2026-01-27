@@ -18,4 +18,10 @@ public interface StudentStatusRepository extends JpaRepository<StudentStatus, Lo
 
     long countByStudent_School_IdAndDateAndPickupStatus(Long schoolId, LocalDate date, String pickupStatus);
 
+	long countByStudentSchoolIdAndDateAndPickupStatus(Long schoolId, LocalDate today, String string);
+
+	long countByStudentSchoolIdAndDate(Long schoolId, LocalDate today);
+
+	List<StudentStatus> findByStudentSchoolIdAndDate(Long schoolId, LocalDate date);
+
 }

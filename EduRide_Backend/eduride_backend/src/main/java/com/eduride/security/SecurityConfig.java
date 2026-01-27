@@ -33,47 +33,54 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // ─── Public endpoints ───
+                // 1. Public Infrastructure & Preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // 2. Public Auth & Signup
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(
-                    "/api/agencies/signup",
-                    "/api/drivers/signup",
-                    "/api/students/signup",
-                    "/api/schools/signup",
-                    "/api/bus-helpers/signup",
-                    "/api/helpers/signup"
-                ).permitAll()
+                .requestMatchers("/api/*/signup").permitAll()
 
-                // ─── Public read-only for common data (dropdowns etc.) ───
-                .requestMatchers(HttpMethod.GET,
-                    "/api/agencies",
-                    "/api/schools",
-                    "/api/buses/**"
-                ).permitAll()
+                // 3. Public Dropdowns for Registration
+                .requestMatchers(HttpMethod.GET, "/api/agencies").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/schools").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/buses").permitAll()
 
-                // ─── Protected routes by role ───
+                // 4. Dashboards (Role-Specific)
+                .requestMatchers("/api/schools/dashboard/**").hasRole("SCHOOL")
+                .requestMatchers("/api/agencies/dashboard/**").hasRole("AGENCY")
+                
+                .requestMatchers("/api/schools/agency/**").hasRole("AGENCY")
+                .requestMatchers("/api/drivers/agency/**").hasRole("AGENCY")
+
+                // 5. Critical: Helper Assignment (Allow School and Agency)
+                .requestMatchers(HttpMethod.PUT, "/api/buses/*/assign-helper/*").hasAnyRole("SCHOOL", "AGENCY")
+
+                // 6. General Role-Based Access
+                
                 .requestMatchers("/api/agencies/**").hasRole("AGENCY")
-                .requestMatchers("/api/drivers/**").hasRole("DRIVER")
-                .requestMatchers("/api/bus-helpers/**", "/api/helpers/**").hasRole("HELPER")
+                .requestMatchers("/api/schools/agency/**").hasRole("AGENCY")
                 .requestMatchers("/api/schools/**").hasRole("SCHOOL")
+             // Drivers
+                .requestMatchers("/api/drivers/agency/**").hasRole("AGENCY")
+                .requestMatchers("/api/drivers/dashboard/**").hasRole("DRIVER")
+                .requestMatchers("/api/drivers/**").hasAnyRole("AGENCY", "DRIVER")
 
-                // Students can access their own data
-                .requestMatchers("/api/students/me").hasRole("STUDENT")
+                //.requestMatchers("/api/drivers/**").hasRole("DRIVER")
+                .requestMatchers("/api/helpers/**", "/api/bus-helpers/**").hasAnyRole("AGENCY", "SCHOOL", "HELPER")
                 .requestMatchers("/api/students/**").hasAnyRole("STUDENT", "AGENCY", "SCHOOL")
+               
+                // 7. Bus Access (GET is shared, other methods are Agency only)
+                .requestMatchers(HttpMethod.GET, "/api/buses/agency/**").hasRole("AGENCY")
+                .requestMatchers(HttpMethod.GET, "/api/buses/**").hasAnyRole("AGENCY", "SCHOOL")
+                .requestMatchers("/api/buses/**").hasRole("AGENCY")
 
-                // Student status - students see their own, agency/school can see more
-                .requestMatchers("/api/student-status/**").hasAnyRole("STUDENT", "AGENCY", "SCHOOL")
-
-                // Everything else requires authentication
                 .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
@@ -90,12 +97,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }

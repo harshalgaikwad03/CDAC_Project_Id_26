@@ -18,36 +18,46 @@ public class StudentStatusService {
         this.repo = repo;
     }
 
-    // CREATE
+    // ─── CREATE ───
     public StudentStatus create(StudentStatus status) {
-        status.setDate(LocalDate.now());   // auto set current date
+        // Auto-set current date if not provided
+        if (status.getDate() == null) {
+            status.setDate(LocalDate.now());
+        }
         return repo.save(status);
     }
 
-    // READ ALL
+    // ─── READ ALL ───
     public List<StudentStatus> findAll() {
         return repo.findAll();
     }
 
-    // READ BY ID
+    // ─── READ ONE ───
     public StudentStatus findById(Long id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Student status not found with id: " + id));
     }
 
-    // UPDATE
+    // ─── UPDATE ───
     public StudentStatus update(Long id, StudentStatus updated) {
         StudentStatus existing = findById(id);
 
-        existing.setPickupStatus(updated.getPickupStatus());
-        existing.setStudent(updated.getStudent());
-        existing.setUpdatedBy(updated.getUpdatedBy());
-        // You might want to update date or other fields depending on your business rules
+        // Update allowed fields
+        if (updated.getPickupStatus() != null) {
+            existing.setPickupStatus(updated.getPickupStatus());
+        }
+        if (updated.getStudent() != null) {
+            existing.setStudent(updated.getStudent());
+        }
+        if (updated.getUpdatedBy() != null) {
+            existing.setUpdatedBy(updated.getUpdatedBy());
+        }
+        // Date is usually not updated — keep original
 
         return repo.save(existing);
     }
 
-    // DELETE
+    // ─── DELETE ───
     public void delete(Long id) {
         if (!repo.existsById(id)) {
             throw new ResourceNotFoundException("Student status not found with id: " + id);
@@ -55,15 +65,30 @@ public class StudentStatusService {
         repo.deleteById(id);
     }
 
-    // Find all statuses for a student
+    // ─── Find all statuses for a specific student ───
     public List<StudentStatus> findByStudent(Long studentId) {
         return repo.findByStudentId(studentId);
     }
 
-    // NEW: Get today's status for a student (returns null if not found)
-    public StudentStatus findTodayStatusForStudent(Long studentId) {
+    // ─── Find today's status for a specific student ───
+    public Optional<StudentStatus> findTodayStatusForStudent(Long studentId) {
         LocalDate today = LocalDate.now();
-        Optional<StudentStatus> status = repo.findByStudentIdAndDate(studentId, today);
-        return status.orElse(null);
+        return repo.findByStudentIdAndDate(studentId, today);
+    }
+
+    // ─── NEW: Find all statuses for a school on a specific date ───
+    public List<StudentStatus> findBySchoolIdAndDate(Long schoolId, LocalDate date) {
+        return repo.findByStudentSchoolIdAndDate(schoolId, date);
+    }
+
+    // ─── NEW: Count statuses for a school on a specific date ───
+    public long countBySchoolIdAndDate(Long schoolId, LocalDate date) {
+        return repo.countByStudentSchoolIdAndDate(schoolId, date);
+    }
+
+    // ─── NEW: Count present statuses for a school on a specific date ───
+    public long countPresentBySchoolIdAndDate(Long schoolId, LocalDate date) {
+        return repo.countByStudentSchoolIdAndDateAndPickupStatus(schoolId, date, "PRESENT");
+        // Change "PRESENT" to your actual PickupStatus enum/string value if different
     }
 }

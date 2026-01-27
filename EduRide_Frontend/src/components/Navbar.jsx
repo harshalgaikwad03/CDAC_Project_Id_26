@@ -1,74 +1,53 @@
+// src/components/Navbar.jsx
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Navbar() {
+function Navbar() {
+  const role = localStorage.getItem("role")?.toLowerCase();
   const navigate = useNavigate();
 
-  const userStr = localStorage.getItem("user");
-  const role = localStorage.getItem("role")?.toLowerCase();
-
-  const user = userStr ? JSON.parse(userStr) : null;
-
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
+    localStorage.clear();
     navigate("/login");
   };
 
   return (
-    <nav className="bg-blue-700 text-white p-4 shadow-md">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="text-xl font-bold">
-            EduRide
-          </Link>
+    <nav className="bg-blue-600 text-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold">
+          EduRide
+        </Link>
 
-          <div className="flex gap-6">
-            <Link to="/" className="hover:underline">
-              Home
-            </Link>
+        <div className="space-x-6">
+          <Link to="/" className="hover:underline">Home</Link>
+          <Link to="/about" className="hover:underline">About</Link>
+          <Link to="/help" className="hover:underline">Help</Link>
 
-            {role === "agency" && (
-              <Link to="/agency/services" className="hover:underline">
-                Services
-              </Link>
-            )}
-
-            {role === "school" && (
-              <Link to="/school/services" className="hover:underline">
-                Services
-              </Link>
-            )}
-
-            <Link to="/about" className="hover:underline">
-              About
-            </Link>
-            <Link to="/help" className="hover:underline">
-              Help
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6">
-          {user ? (
+          {role && (
             <>
-              <span className="font-medium">{user.name}</span>
+              {role === "school" && (
+                <Link to="/school/services" className="hover:underline font-medium">
+                  Services
+                </Link>
+              )}
+              {role === "agency" && (
+                <Link to="/agency/services" className="hover:underline font-medium">
+                  Services
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
-                className="bg-white text-blue-700 px-4 py-2 rounded font-medium hover:bg-gray-100 transition"
+                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
               >
                 Logout
               </button>
             </>
-          ) : (
+          )}
+
+          {!role && (
             <>
-              <Link to="/login" className="hover:underline">
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="bg-white text-blue-700 px-4 py-2 rounded font-medium hover:bg-gray-100 transition"
-              >
+              <Link to="/login" className="hover:underline">Login</Link>
+              <Link to="/signup" className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">
                 Sign Up
               </Link>
             </>
@@ -78,3 +57,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
+export default Navbar;

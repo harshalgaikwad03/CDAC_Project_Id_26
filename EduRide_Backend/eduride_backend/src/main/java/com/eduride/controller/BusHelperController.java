@@ -1,5 +1,6 @@
 package com.eduride.controller;
 
+import com.eduride.dto.BusHelperUpdateDTO;
 import com.eduride.dto.dashboard.BusHelperDashboardSummaryDTO;
 import com.eduride.entity.BusHelper;
 import com.eduride.service.BusHelperService;
@@ -20,7 +21,6 @@ public class BusHelperController {
         this.service = service;
     }
 
-    // ─── Existing unchanged ───
     @PostMapping("/signup")
     public BusHelper create(@RequestBody BusHelper helper) {
         return service.create(helper);
@@ -62,11 +62,12 @@ public class BusHelperController {
         return service.findByBus(busId);
     }
 
-    // ─── NEW: Dashboard summary for Bus Helper ───
     @GetMapping("/dashboard/summary")
     @PreAuthorize("hasRole('HELPER')")
     public BusHelperDashboardSummaryDTO getBusHelperDashboardSummary() {
         String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return service.getBusHelperDashboardSummary(currentEmail);
     }
+    
+
 }

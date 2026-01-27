@@ -6,50 +6,62 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private static final String SECRET = "eduride_secret_key_eduride_secret_key_eduride";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 30; // 30 minutes
+    // Production recommendation: Move this to application.properties or environment variable
+    // For now using a strong 256-bit key (minimum for HS256)
+    private static final String SECRET_KEY_STRING = "your-super-secure-secret-key-32-chars-minimum-eduride-2025-secure";
+    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes());
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
-    }
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 24 hours (better UX than 30 min)
 
+    /**
+     * Generate JWT token with username and role (with ROLE_ prefix)
+     */
     public String generateToken(String username, String roleWithPrefix) {
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roleWithPrefix)   // better name: "roles" (plural)
+                .claim("role", roleWithPrefix)  // Stored as "ROLE_SCHOOL", "ROLE_AGENCY", etc.
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    /**
+     * Extract username (subject) from token
+     */
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    // Optional: if you ever need to read role from token (not needed in your current filter)
+    /**
+     * Extract role from token (returns "ROLE_XXX" or null)
+     */
     public String extractRole(String token) {
-        return extractAllClaims(token).get("roles", String.class);
+        return extractAllClaims(token).get("role", String.class);
     }
 
+    /**
+     * Validate token (signature + expiration)
+     */
     public boolean isTokenValid(String token) {
         try {
             extractAllClaims(token);
             return true;
         } catch (Exception e) {
+            System.out.println("DEBUG: JWT validation failed - " + e.getMessage());
             return false;
         }
     }
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(SECRET_KEY)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
