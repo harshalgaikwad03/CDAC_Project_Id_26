@@ -120,4 +120,10 @@ public class StudentService {
     public List<Student> findByBus(Long busId) {
         return repo.findByAssignedBusId(busId);
     }
+    
+    public List<Student> findStudentsByHelperEmail(String email) {
+        return repo.findByAssignedBusBusHelpersEmail(email);
+    }
+
+
 }

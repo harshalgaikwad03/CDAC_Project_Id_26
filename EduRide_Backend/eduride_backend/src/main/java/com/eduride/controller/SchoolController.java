@@ -31,6 +31,19 @@ public class SchoolController {
     /**
      * Public signup endpoint - anyone can register a school
      */
+    
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('SCHOOL')")
+    public School getMyProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.findByEmail(email)
+        		.orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Student profile not found for email: " + email));
+    }
+
+
+    
     @PostMapping("/signup")
     @PreAuthorize("permitAll()")
     public ResponseEntity<School> create(@Valid @RequestBody School school) {

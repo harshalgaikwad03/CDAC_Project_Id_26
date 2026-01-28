@@ -66,14 +66,15 @@ public class StudentStatusController {
 
     // FIXED: Proper Optional handling with type-safe return
     @GetMapping("/today/{studentId}")
-    @PreAuthorize("hasAnyRole('AGENCY','SCHOOL','STUDENT')")
+    @PreAuthorize("hasAnyRole('AGENCY','SCHOOL','STUDENT','HELPER')")
     public ResponseEntity<StudentStatus> getTodayStatus(@PathVariable Long studentId) {
-        checkStudentAccess(studentId);
 
         return statusService.findTodayStatusForStudent(studentId)
-                .map(ResponseEntity::ok)  // Found → 200 OK + body
-                .orElseGet(() -> ResponseEntity.noContent().build());  // Not found → 204 No Content
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
+
+    
 
     // Get all student statuses for a school on today's date
     @GetMapping("/school/{schoolId}/today")
