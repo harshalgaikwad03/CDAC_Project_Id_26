@@ -1,24 +1,26 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Eduride_Log.Logger;
 using Eduride_Log.Models;
+using Eduride_Log.Logger;
+using System;
+
 namespace Eduride_Log.Controllers
 {
     [ApiController]
-    [Route("api/logs")]
+    [Route("api")]
     public class LogController : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("logs")]
         public IActionResult Log([FromBody] LogRequest request)
         {
-            if (request == null || string.IsNullOrEmpty(request.Message))
-                return BadRequest();
+            Console.WriteLine($"[API HIT] Received log request: {request.Message}");
 
-            string formattedMessage =
-                $"[{request.Level}] [{request.Source}] {request.Message} | Data: {request.Data}";
+            // Call the logger
+            string savedPath = FileLogger.CurrentLogger.Log(
+                $"[{request.Level}] [{request.Source}] {request.Message} | Data: {request.Data}"
+            );
 
-            FileLogger.CurrentLogger.Log(formattedMessage);
-
-            return Ok();
+            // Return the path in the response for debugging purposes
+            return Ok(new { message = "Log saved successfully", filePath = savedPath });
         }
     }
 }

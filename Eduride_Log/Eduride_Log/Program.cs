@@ -1,32 +1,29 @@
-namespace Eduride_Log
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+
+// CORRECTION: Enable CORS so your Frontend (React/Angular/HTML) can hit this API
+builder.Services.AddCors(options =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
+    options.AddPolicy("AllowAll",
+        policy =>
         {
-            var builder = WebApplication.CreateBuilder(args);
+            policy.AllowAnyOrigin()  // Allows requests from anywhere (localhost:3000, etc.)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+});
 
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
+var app = builder.Build();
 
-            var app = builder.Build();
+// CORRECTION: Apply the CORS policy
+app.UseCors("AllowAll");
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
-            app.UseStaticFiles();
+app.MapControllers();
 
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-
-            app.Run();
-        }
-    }
-}
+app.Run();

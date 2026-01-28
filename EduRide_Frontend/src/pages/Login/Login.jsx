@@ -1,7 +1,7 @@
-// src/pages/Login/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../services/api";
+// Note: We are now importing the named export 'logActivity' too
+import API, { logActivity } from "../../services/api"; 
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -15,12 +15,14 @@ function Login() {
     setLoading(true);
 
     try {
+      // 1. Perform the actual Login
       const res = await API.post("/auth/login", { email, password });
 
       if (!res.data?.token) {
         throw new Error("No token received");
       }
 
+      // 2. Save User Data
       localStorage.setItem("token", res.data.token);
 
       const userData = {
@@ -32,9 +34,24 @@ function Login() {
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("role", (res.data.role || "").toLowerCase().trim());
 
+      // =========================================================
+      // 3. NEW: Call the .NET Logger (Fire and Forget)
+      // =========================================================
+      logActivity(
+        "INFO",                          // Level
+        "User Logged In Successfully",   // Message
+        "EduRide-Frontend",              // Source
+        `Email: ${email}`                // Data
+      );
+      // =========================================================
+
       navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error(err);
+      
+      // OPTIONAL: You can also log failures if you want!
+      logActivity("ERROR", "Login Failed", "EduRide-Frontend", `Email: ${email} | Error: ${err.message}`);
+
       setError(
         err.response?.data?.message ||
         err.response?.data?.error ||

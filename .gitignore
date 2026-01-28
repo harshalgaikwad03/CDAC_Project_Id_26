@@ -1,4 +1,5 @@
-# IDE
+# --- YOUR EXISTING RULES ---
+# IDE (Eclipse/VS Code)
 .metadata/
 .project
 .classpath
@@ -8,12 +9,24 @@
 .DS_Store
 Thumbs.db
 
-# Backend
+# Backend (Java/Maven)
 target/
 
-# Frontend
+# Frontend (Node)
 node_modules/
 dist/
 
 # Logs
 *.log
+
+
+# --- NEW .NET / VISUAL STUDIO RULES (ADD THESE) ---
+# This fixes the "Permission denied" error
+.vs/
+*.user
+*.suo
+*.slnx
+
+# Build output (No need to track these)
+bin/
+obj/

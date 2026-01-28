@@ -5,7 +5,11 @@ namespace Eduride_Log.Logger
 {
     public class FileLogger
     {
-        private static FileLogger _fileLogger = new FileLogger();
+        private static readonly FileLogger _fileLogger = new FileLogger();
+
+        // CORRECTION: Lock object for thread safety
+        private static readonly object _lock = new object();
+
         private FileLogger() { }
 
         public static FileLogger CurrentLogger
@@ -13,34 +17,31 @@ namespace Eduride_Log.Logger
             get { return _fileLogger; }
         }
 
-        public void Log(string message)
+        // Returns the path so we can see where it wrote
+        public string Log(string message)
         {
-            //Dynamic project-relative path
-            string path = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "Eduride_Log",
-                "Eduride_Log",
-                "log.txt"
-            );
+            // This puts the Logs folder in your project's output directory (bin/Debug/net8.0/)
+            string logDirectory = Path.Combine(AppContext.BaseDirectory, "Logs");
+            string path = Path.Combine(logDirectory, "log.txt");
 
-            //Ensure directory exists
-            string directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory))
+            // CORRECTION: Use lock to prevent "File in use" errors during simultaneous requests
+            lock (_lock)
             {
-                Directory.CreateDirectory(directory);
+                if (!Directory.Exists(logDirectory))
+                {
+                    Directory.CreateDirectory(logDirectory);
+                }
+
+                using (var writer = new StreamWriter(path, true))
+                {
+                    writer.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
+                }
             }
 
-            // Write to file safely
-            using (FileStream stream = new FileStream(path, FileMode.Append, FileAccess.Write))
-            using (StreamWriter writer = new StreamWriter(stream))
-            {
-                writer.WriteLine(
-                    "Logged at " +
-                    DateTime.Now.ToString() +
-                    " - " +
-                    message
-                );
-            }
+            // Print exact path to Console so you know where to look
+            Console.WriteLine($"[LOGGER] Wrote to file: {path}");
+
+            return path;
         }
     }
 }

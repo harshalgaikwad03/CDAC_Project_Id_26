@@ -2,9 +2,9 @@
 {
     public class LogRequest
     {
-        public string Level { get; set; }
-        public string Message { get; set; }
-        public string Source { get; set; }
-        public string Data { get; set; }
+        public required string Level { get; set; }
+        public required string Message { get; set; }
+        public required string Source { get; set; }
+        public string? Data { get; set; }
     }
 }
