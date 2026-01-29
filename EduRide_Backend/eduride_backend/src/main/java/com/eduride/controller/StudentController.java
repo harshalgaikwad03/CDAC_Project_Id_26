@@ -3,6 +3,7 @@ package com.eduride.controller;
 import com.eduride.entity.Student;
 import com.eduride.service.StudentService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity; // <--- Added Import
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +43,7 @@ public class StudentController {
         return service.findAll();
     }
 
-    // ✅ NEW: ONLY STUDENTS OF LOGGED-IN SCHOOL
+    // ONLY STUDENTS OF LOGGED-IN SCHOOL
     @GetMapping("/school/me")
     @PreAuthorize("hasRole('SCHOOL')")
     public List<Student> getStudentsOfLoggedInSchool() {
@@ -62,6 +63,14 @@ public class StudentController {
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")
     public Student update(@PathVariable Long id, @RequestBody Student student) {
         return service.update(id, student);
+    }
+
+    // ✅ NEW: ENDPOINT TO ACTIVATE PASS (Called after Payment)
+    @PutMapping("/{id}/activate-pass")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('SCHOOL')") 
+    public ResponseEntity<?> activatePass(@PathVariable Long id) {
+        service.activatePass(id);
+        return ResponseEntity.ok("Pass Activated Successfully");
     }
 
     @DeleteMapping("/{id}")

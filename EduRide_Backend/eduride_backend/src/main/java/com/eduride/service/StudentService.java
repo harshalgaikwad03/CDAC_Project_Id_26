@@ -56,7 +56,7 @@ public class StudentService {
         return repo.findByEmail(email);
     }
 
-    // ✅ ONLY STUDENTS OF LOGGED-IN SCHOOL
+    // ONLY STUDENTS OF LOGGED-IN SCHOOL
     public List<Student> findByLoggedInSchool(String schoolEmail) {
         School school = schoolRepository.findByEmail(schoolEmail)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -119,5 +119,12 @@ public class StudentService {
 
     public List<Student> findByBus(Long busId) {
         return repo.findByAssignedBusId(busId);
+    }
+
+    // ✅ NEW: METHOD TO ACTIVATE PASS
+    public void activatePass(Long id) {
+        Student student = findById(id);
+        student.setPassStatus("ACTIVE");
+        repo.save(student);
     }
 }
