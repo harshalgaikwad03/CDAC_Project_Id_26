@@ -23,5 +23,6 @@ public interface StudentStatusRepository extends JpaRepository<StudentStatus, Lo
 	long countByStudentSchoolIdAndDate(Long schoolId, LocalDate today);
 
 	List<StudentStatus> findByStudentSchoolIdAndDate(Long schoolId, LocalDate date);
+	
 
 }

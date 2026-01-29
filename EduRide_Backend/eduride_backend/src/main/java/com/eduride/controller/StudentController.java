@@ -31,6 +31,9 @@ public class StudentController {
                         HttpStatus.NOT_FOUND,
                         "Student profile not found for email: " + email));
     }
+    
+    
+    
 
     @PostMapping("/signup")
     public Student create(@RequestBody Student student) {
@@ -52,6 +55,8 @@ public class StudentController {
                 .getName();
         return service.findByLoggedInSchool(email);
     }
+    
+    
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")

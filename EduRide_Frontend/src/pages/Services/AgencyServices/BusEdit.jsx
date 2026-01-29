@@ -9,7 +9,7 @@ function BusEdit() {
 
   const [formData, setFormData] = useState({
     busNumber: "",
-    capacity: 0,
+    capacity: "",
     schoolId: "",
     driverId: "",
   });
@@ -24,15 +24,16 @@ function BusEdit() {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
 
-        // 1️⃣ Fetch bus
+        // 1️⃣ Fetch bus (BusDTO)
         const busRes = await API.get(`/buses/${busId}`);
         const bus = busRes.data;
 
+        // ✅ IMPORTANT: convert IDs to STRING
         setFormData({
-          busNumber: bus.busNumber,
-          capacity: bus.capacity,
-          schoolId: bus.school?.id || "",
-          driverId: bus.driver?.id || "",
+          busNumber: bus.busNumber || "",
+          capacity: bus.capacity || "",
+          schoolId: bus.schoolId ? String(bus.schoolId) : "",
+          driverId: bus.driverId ? String(bus.driverId) : "",
         });
 
         // 2️⃣ Fetch schools
@@ -44,10 +45,21 @@ function BusEdit() {
           `/drivers/agency/${user.id}/unassigned`
         );
 
-        // Include currently assigned driver (important for edit)
-        const driverList = driversRes.data || [];
-        if (bus.driver) {
-          driverList.push(bus.driver);
+        let driverList = driversRes.data || [];
+
+        // ✅ INCLUDE currently assigned driver (BusDTO-safe)
+        if (bus.driverId) {
+          const exists = driverList.some(
+            (d) => String(d.id) === String(bus.driverId)
+          );
+
+          if (!exists) {
+            driverList.push({
+              id: bus.driverId,
+              name: bus.driverName,
+              licenseNumber: "Assigned",
+            });
+          }
         }
 
         setDrivers(driverList);
@@ -74,10 +86,14 @@ function BusEdit() {
 
     try {
       const payload = {
-        busNumber: formData.busNumber,
+        busNumber: formData.busNumber.trim(),
         capacity: Number(formData.capacity),
-        school: formData.schoolId ? { id: Number(formData.schoolId) } : null,
-        driver: formData.driverId ? { id: Number(formData.driverId) } : null,
+        school: formData.schoolId
+          ? { id: Number(formData.schoolId) }
+          : null,
+        driver: formData.driverId
+          ? { id: Number(formData.driverId) }
+          : null,
       };
 
       await API.put(`/buses/${busId}`, payload);
@@ -107,68 +123,60 @@ function BusEdit() {
       >
         {/* Bus Number */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Bus Number
-          </label>
+          <label className="block font-medium mb-2">Bus Number</label>
           <input
             name="busNumber"
             value={formData.busNumber}
             onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
             required
+            className="w-full p-3 border rounded-lg"
           />
         </div>
 
         {/* Capacity */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Capacity
-          </label>
+          <label className="block font-medium mb-2">Capacity</label>
           <input
             type="number"
             name="capacity"
             value={formData.capacity}
             onChange={handleChange}
             min="1"
-            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
             required
+            className="w-full p-3 border rounded-lg"
           />
         </div>
 
         {/* Assign School */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Assign School
-          </label>
+          <label className="block font-medium mb-2">Assign School</label>
           <select
             name="schoolId"
             value={formData.schoolId}
             onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border rounded-lg"
           >
             <option value="">No School Assigned</option>
             {schools.map((school) => (
-              <option key={school.id} value={school.id}>
+              <option key={school.id} value={String(school.id)}>
                 {school.name}
               </option>
             ))}
           </select>
         </div>
 
-        {/* ✅ Assign Driver */}
+        {/* Assign Driver */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">
-            Assign Driver
-          </label>
+          <label className="block font-medium mb-2">Assign Driver</label>
           <select
             name="driverId"
             value={formData.driverId}
             onChange={handleChange}
-            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border rounded-lg"
           >
             <option value="">No Driver Assigned</option>
             {drivers.map((driver) => (
-              <option key={driver.id} value={driver.id}>
+              <option key={driver.id} value={String(driver.id)}>
                 {driver.name} ({driver.licenseNumber})
               </option>
             ))}
@@ -178,9 +186,9 @@ function BusEdit() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-3 px-6 rounded-lg font-medium text-white transition ${
+          className={`w-full py-3 rounded-lg text-white ${
             loading
-              ? "bg-blue-400 cursor-not-allowed"
+              ? "bg-blue-400"
               : "bg-blue-600 hover:bg-blue-700"
           }`}
         >

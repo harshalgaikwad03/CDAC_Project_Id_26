@@ -42,6 +42,9 @@ import TodayPresentStudents from "./pages/Services/SchoolServices/TodayPresentSt
 import TodayAbsentStudents from "./pages/Services/SchoolServices/TodayAbsentStudents";
 import SchoolBusDetails from "./pages/Services/SchoolServices/SchoolBusDetails";
 
+//BusHelperService
+import HelperMarkStatus from "./pages/Services/BusHelperServices/HelperMarkStatus";
+
 function App() {
   return (
     <>
@@ -88,6 +91,10 @@ function App() {
 
           {/* ─── Catch-all Redirect ─── */}
           <Route path="*" element={<NavigateToDashboardOrLogin />} />
+
+          {/* ─── Bus Helper Protected Routes ─── */}
+          <Route path="/helper/mark-status" element={<HelperMarkStatus />} />
+
         </Routes>
       </div>
     </>

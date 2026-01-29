@@ -3,8 +3,12 @@ package com.eduride.controller;
 import com.eduride.dto.dashboard.AgencyDashboardSummaryDTO;
 import com.eduride.entity.Agency;
 import com.eduride.service.AgencyService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -18,6 +22,18 @@ public class AgencyController {
     public AgencyController(AgencyService service) {
         this.service = service;
     }
+    
+    
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('AGENCY')")
+    public Agency getMyProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.findByEmail(email)
+        		.orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Agency profile not found for email: " + email));
+    }
+
 
     @PostMapping("/signup")
     @PreAuthorize("permitAll()")

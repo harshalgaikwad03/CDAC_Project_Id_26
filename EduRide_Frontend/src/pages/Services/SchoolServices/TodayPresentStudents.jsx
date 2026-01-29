@@ -1,6 +1,6 @@
 // src/pages/Services/SchoolServices/TodayPresentStudents.jsx
-import React, { useState, useEffect } from 'react';
-import API from '../../../services/api';
+import React, { useState, useEffect } from "react";
+import API from "../../../services/api";
 
 function TodayPresentStudents() {
   const [students, setStudents] = useState([]);
@@ -10,7 +10,6 @@ function TodayPresentStudents() {
   useEffect(() => {
     const fetchPresent = async () => {
       try {
-        // Get school ID from localStorage (after login)
         const user = JSON.parse(localStorage.getItem("user"));
         const schoolId = user?.id;
 
@@ -18,15 +17,14 @@ function TodayPresentStudents() {
 
         const res = await API.get(`/student-status/school/${schoolId}/today`);
 
-        const today = new Date().toISOString().split('T')[0];
-
+        // Present = PICKED or DROPPED
         const present = res.data.filter(
-          s => s.date === today && s.pickupStatus === 'PRESENT'  // ← adjust 'PRESENT' if your value is different
+          s => s.pickupStatus === "PICKED" || s.pickupStatus === "DROPPED"
         );
 
         setStudents(present.map(s => s.student));
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load present students');
+        setError(err.response?.data?.message || "Failed to load present students");
       } finally {
         setLoading(false);
       }
@@ -45,25 +43,27 @@ function TodayPresentStudents() {
       </h1>
 
       {students.length === 0 ? (
-        <p className="text-center text-gray-600 text-lg">No students marked present today.</p>
+        <p className="text-center text-gray-600 text-lg">
+          No students marked present today.
+        </p>
       ) : (
         <div className="overflow-x-auto bg-white shadow rounded-xl">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Roll No</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Class</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Contact</th>
+                <th className="px-6 py-4 text-left">Name</th>
+                <th className="px-6 py-4 text-left">Roll No</th>
+                <th className="px-6 py-4 text-left">Class</th>
+                <th className="px-6 py-4 text-left">Contact</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {students.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50">
+            <tbody className="divide-y">
+              {students.map(s => (
+                <tr key={s.id}>
                   <td className="px-6 py-4">{s.name}</td>
-                  <td className="px-6 py-4">{s.rollNo || '-'}</td>
-                  <td className="px-6 py-4">{s.className || '-'}</td>
-                  <td className="px-6 py-4">{s.phone || '-'}</td>
+                  <td className="px-6 py-4">{s.rollNo || "-"}</td>
+                  <td className="px-6 py-4">{s.className || "-"}</td>
+                  <td className="px-6 py-4">{s.phone || "-"}</td>
                 </tr>
               ))}
             </tbody>

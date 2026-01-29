@@ -1,59 +1,78 @@
-// src/components/Navbar.jsx
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ProfileDropdown from "./Profiles/ProfileDropdown";
 
 function Navbar() {
-  const role = localStorage.getItem("role")?.toLowerCase();
+  const role = localStorage.getItem("role")?.toLowerCase()?.trim();
   const navigate = useNavigate();
+  const [showProfile, setShowProfile] = useState(false);
+  const profileRef = useRef();
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
+  // close profile on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfile(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav className="bg-blue-600 text-white shadow-lg relative">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
           EduRide
         </Link>
 
-        <div className="space-x-6">
-          <Link to="/" className="hover:underline">Home</Link>
-          <Link to="/about" className="hover:underline">About</Link>
-          <Link to="/help" className="hover:underline">Help</Link>
+        <div className="space-x-6 flex items-center">
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+          <Link to="/help">Help</Link>
 
           {role && (
             <>
-              {role === "school" && (
-                <Link to="/school/services" className="hover:underline font-medium">
+              <Link to="/dashboard" className="font-medium">
+                Dashboard
+              </Link>
+
+              {(role === "school" || role === "agency") && (
+                <Link to={`/${role}/services`} className="font-medium">
                   Services
                 </Link>
               )}
-              {role === "agency" && (
-                <Link to="/agency/services" className="hover:underline font-medium">
-                  Services
-                </Link>
-              )}
+
+              {/* Profile Button */}
               <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+                onClick={() => setShowProfile((p) => !p)}
+                className="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100"
               >
-                Logout
+                Profile
               </button>
             </>
           )}
 
           {!role && (
             <>
-              <Link to="/login" className="hover:underline">Login</Link>
-              <Link to="/signup" className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100">
+              <Link to="/login">Login</Link>
+              <Link
+                to="/signup"
+                className="bg-white text-blue-600 px-4 py-2 rounded"
+              >
                 Sign Up
               </Link>
             </>
           )}
         </div>
       </div>
+
+      {/* Profile Dropdown */}
+      {showProfile && (
+        <div ref={profileRef}>
+          <ProfileDropdown />
+        </div>
+      )}
     </nav>
   );
 }

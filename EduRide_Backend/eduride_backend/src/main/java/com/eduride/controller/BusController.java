@@ -1,5 +1,6 @@
 package com.eduride.controller;
 
+import com.eduride.dto.BusDTO;
 import com.eduride.entity.Agency;
 import com.eduride.entity.Bus;
 import com.eduride.entity.School;
@@ -12,7 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.eduride.service.BusService;
 import java.util.List;
 
 @RestController
@@ -53,8 +54,8 @@ public class BusController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
-    public Bus getById(@PathVariable Long id) {
-        return service.findById(id);
+    public BusDTO getById(@PathVariable Long id) {
+        return service.getBusDTOById(id);
     }
 
     @PutMapping("/{id}")
@@ -72,15 +73,31 @@ public class BusController {
 
     @GetMapping("/agency/{agencyId}")
     @PreAuthorize("hasRole('AGENCY')")
-    public List<Bus> getByAgency(@PathVariable Long agencyId) {
-        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+    public List<BusDTO> getByAgency(@PathVariable Long agencyId) {
+
+        // ✅ Get logged-in agency
+        String currentEmail = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
         Agency currentAgency = agencyService.findByEmail(currentEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency not found"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Agency not found")
+                );
+
+        // ✅ Ensure agency can access ONLY its own buses
         if (!currentAgency.getId().equals(agencyId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only view your own buses");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You can only view your own buses"
+            );
         }
-        return service.findByAgency(agencyId);
+
+        // ✅ Return DTOs (FIXES driver/helper not showing)
+        return service.findByAgencyDTO(agencyId);
     }
+
 
     @GetMapping("/school/{schoolId}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL')")
@@ -98,6 +115,14 @@ public class BusController {
         }
         return service.findBySchool(schoolId);
     }
+    
+    @GetMapping("/school/bus-detail/{schoolId}")
+    @PreAuthorize("hasRole('SCHOOL')")
+    public List<BusDTO> getBusesBySchool(@PathVariable Long schoolId) {
+        return service.getBusesBySchool(schoolId);
+    }
+
+
 
     @GetMapping("/driver/{driverId}")
     @PreAuthorize("hasRole('DRIVER') or hasRole('AGENCY')")
@@ -105,4 +130,13 @@ public class BusController {
         Bus bus = service.getBusByDriver(driverId);
         return ResponseEntity.ok(bus);
     }
+    
+    @GetMapping("/school/me")
+    @PreAuthorize("hasRole('SCHOOL')")
+    public List<Bus> getBusesForMySchool() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return service.findByLoggedInSchool(email);
+    }
+
 }

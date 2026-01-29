@@ -46,10 +46,10 @@ function BusDetails() {
               <h3 className="text-xl font-semibold mb-4">Bus No: {bus.busNumber}</h3>
               <p className="text-gray-700 mb-2">Capacity: {bus.capacity}</p>
               <p className="text-gray-700 mb-2">
-                Assigned School: {bus.school?.name || "Not Assigned"}
+                Assigned School: {bus.schoolName || "Not Assigned"}
               </p>
               <p className="text-gray-700 mb-6">
-                Driver: {bus.driver?.name || "Not Assigned"}
+                Driver: {bus.driverName || "Not Assigned"}
               </p>
 
               <button

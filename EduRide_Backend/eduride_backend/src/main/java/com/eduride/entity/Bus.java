@@ -3,7 +3,19 @@ package com.eduride.entity;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,23 +35,27 @@ public class Bus {
     @Column(nullable = false)
     private int capacity;
 
-    // ❗ Agency is ALWAYS set from JWT (never from frontend)
-    @ManyToOne
+    // ✅ Needed for StudentList
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "agency_id", nullable = false)
-    @JsonIgnore
+    @JsonIgnoreProperties({ "password", "role" })
     private Agency agency;
 
-    // ✅ MUST NOT be JsonIgnore (needed for POST request)
-    @ManyToOne
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private School school;
 
-    // ✅ MUST NOT be JsonIgnore (needed for POST request)
-    @OneToOne
+
+    // ❌ THIS IS THE CRITICAL FIX
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", unique = true)
+    @JsonIgnore
     private Driver driver;
 
-    @OneToMany(mappedBy = "assignedBus", fetch = FetchType.LAZY)
-    @JsonIgnore
+    // ✅ Needed for StudentList
+    @OneToMany(mappedBy = "assignedBus", fetch = FetchType.EAGER)
+    @JsonIgnoreProperties({ "assignedBus", "school" })
     private List<BusHelper> busHelpers;
 }

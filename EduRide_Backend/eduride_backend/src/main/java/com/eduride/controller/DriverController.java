@@ -3,9 +3,12 @@ package com.eduride.controller;
 import com.eduride.dto.dashboard.DriverDashboardSummaryDTO;
 import com.eduride.entity.Driver;
 import com.eduride.service.DriverService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,6 +23,17 @@ public class DriverController {
         this.service = service;
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('DRIVER')")
+    public Driver getMyProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.findByEmail(email)
+        		.orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Driver profile not found for email: " + email));
+    }
+
+    
     // ─── Existing unchanged ───
     @PostMapping("/signup")
     public Driver create(@RequestBody Driver driver) {
