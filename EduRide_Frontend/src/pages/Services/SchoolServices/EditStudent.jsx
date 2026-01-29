@@ -6,6 +6,12 @@ function EditStudent() {
   const { studentId } = useParams();
   const navigate = useNavigate();
 
+  const inputClass =
+    "w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500";
+
+  const readOnlyClass =
+    inputClass + " bg-gray-100 cursor-not-allowed";
+
   const [formData, setFormData] = useState({
     name: "",
     className: "",
@@ -14,42 +20,40 @@ function EditStudent() {
     phone: "",
     address: "",
     passStatus: "ACTIVE",
-    schoolId: "",
+    schoolName: "",
     assignedBusId: ""
   });
 
-  const [schools, setSchools] = useState([]);
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   /* ---------------- LOAD DATA ---------------- */
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [studentRes, schoolsRes, busesRes] = await Promise.all([
-          API.get(`/students/${studentId}`),
-          API.get("/schools"),
-          API.get("/buses")
-        ]);
+        setLoading(true);
 
+        // 1️⃣ Load student (school is already fixed)
+        const studentRes = await API.get(`/students/${studentId}`);
         const student = studentRes.data;
 
         setFormData({
-          name: student.name || "",
-          className: student.className || "",
-          rollNo: student.rollNo || "",
-          email: student.email || "",
-          phone: student.phone || "",
-          address: student.address || "",
-          passStatus: student.passStatus || "ACTIVE",
-          schoolId: student.school?.id || "",
-          assignedBusId: student.assignedBus?.id || ""
+          name: student.name ?? "",
+          className: student.className ?? "",
+          rollNo: student.rollNo ?? "",
+          email: student.email ?? "",
+          phone: student.phone ?? "",
+          address: student.address ?? "",
+          passStatus: student.passStatus ?? "ACTIVE",
+          
+          assignedBusId: student.assignedBus?.id ?? ""
         });
 
-        setSchools(schoolsRes.data || []);
-        setBuses(busesRes.data || []);
+        // 2️⃣ Load buses of logged-in school
+        const busesRes = await API.get("/buses/school/me");
+        setBuses(Array.isArray(busesRes.data) ? busesRes.data : []);
+
       } catch (err) {
         setError("Failed to load student data");
       } finally {
@@ -60,16 +64,17 @@ function EditStudent() {
     loadData();
   }, [studentId]);
 
-  /* ---------------- HANDLE CHANGE ---------------- */
+  /* ---------------- CHANGE ---------------- */
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
     setError("");
 
     const payload = {
@@ -80,24 +85,25 @@ function EditStudent() {
       phone: formData.phone,
       address: formData.address,
       passStatus: formData.passStatus,
-      school: { id: formData.schoolId },
+       
       assignedBus: formData.assignedBusId
         ? { id: formData.assignedBusId }
         : null
+      
     };
 
     try {
       await API.put(`/students/${studentId}`, payload);
       alert("Student updated successfully");
       navigate("/school/services/students");
-    } catch (err) {
-      setError(err.response?.data?.message || "Update failed");
-    } finally {
-      setSaving(false);
+    } catch {
+      setError("Update failed");
     }
   };
 
-  if (loading) return <div className="text-center py-20">Loading...</div>;
+  if (loading) {
+    return <div className="text-center py-20 text-xl">Loading student...</div>;
+  }
 
   /* ---------------- UI ---------------- */
   return (
@@ -105,57 +111,41 @@ function EditStudent() {
       <h1 className="text-3xl font-bold text-center mb-8">Edit Student</h1>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-3 mb-6 rounded">
+        <div className="bg-red-100 text-red-700 p-3 mb-4 rounded">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5 bg-white p-8 rounded-xl shadow">
+      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-8 rounded-xl shadow">
 
-        <input name="name" value={formData.name} onChange={handleChange} placeholder="Student Name" required />
-        <input name="className" value={formData.className} onChange={handleChange} placeholder="Class" required />
-        <input name="rollNo" value={formData.rollNo} onChange={handleChange} placeholder="Roll Number" required />
-        <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
+        <input className={inputClass} name="name" value={formData.name} onChange={handleChange} placeholder="Student Name" />
+        <input className={inputClass} name="className" value={formData.className} onChange={handleChange} placeholder="Class" />
+        <input className={inputClass} name="rollNo" value={formData.rollNo} onChange={handleChange} placeholder="Roll Number" />
+        <input className={inputClass} name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
+        <input className={inputClass} name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" />
+        <textarea className={inputClass} name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
 
-        <input name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone" />
-        <textarea name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
+    
 
-        <select name="passStatus" value={formData.passStatus} onChange={handleChange}>
+
+        <select className={inputClass} name="passStatus" value={formData.passStatus} onChange={handleChange}>
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
         </select>
 
-        <select name="schoolId" value={formData.schoolId} onChange={handleChange} required>
-          <option value="">Select School</option>
-          {schools.map(s => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
-
-        <select name="assignedBusId" value={formData.assignedBusId} onChange={handleChange}>
+        <select className={inputClass} name="assignedBusId" value={formData.assignedBusId} onChange={handleChange}>
           <option value="">Assign Bus (Optional)</option>
           {buses.map(b => (
-            <option key={b.id} value={b.id}>
-              {b.busNumber}
-            </option>
+            <option key={b.id} value={b.id}>{b.busNumber}</option>
           ))}
         </select>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className={`w-full py-3 text-white rounded ${
-            saving ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {saving ? "Saving..." : "Save Changes"}
+        <button className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700">
+          Save Changes
         </button>
-
       </form>
     </div>
   );
 }
 
 export default EditStudent;
-
-

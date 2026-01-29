@@ -1,6 +1,6 @@
 // src/pages/Services/SchoolServices/TodayAbsentStudents.jsx
-import React, { useState, useEffect } from 'react';
-import API from '../../../services/api';
+import React, { useState, useEffect } from "react";
+import API from "../../../services/api";
 
 function TodayAbsentStudents() {
   const [students, setStudents] = useState([]);
@@ -17,16 +17,14 @@ function TodayAbsentStudents() {
 
         const res = await API.get(`/student-status/school/${schoolId}/today`);
 
-        const today = new Date().toISOString().split('T')[0];
-
-        // Absent = status exists but NOT PRESENT
+        // ✅ ABSENT = PENDING (DB rule)
         const absent = res.data.filter(
-          s => s.date === today && s.pickupStatus !== 'PRESENT'
+          s => s.pickupStatus === "PENDING"
         );
 
         setStudents(absent.map(s => s.student));
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load absent students');
+        setError(err.response?.data?.message || "Failed to load absent students");
       } finally {
         setLoading(false);
       }
@@ -45,25 +43,27 @@ function TodayAbsentStudents() {
       </h1>
 
       {students.length === 0 ? (
-        <p className="text-center text-gray-600 text-lg">No absent students recorded today.</p>
+        <p className="text-center text-gray-600 text-lg">
+          No absent students today 🎉
+        </p>
       ) : (
         <div className="overflow-x-auto bg-white shadow rounded-xl">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Roll No</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Class</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Contact</th>
+                <th className="px-6 py-4 text-left">Name</th>
+                <th className="px-6 py-4 text-left">Roll No</th>
+                <th className="px-6 py-4 text-left">Class</th>
+                <th className="px-6 py-4 text-left">Contact</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {students.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50">
+            <tbody className="divide-y">
+              {students.map(s => (
+                <tr key={s.id}>
                   <td className="px-6 py-4">{s.name}</td>
-                  <td className="px-6 py-4">{s.rollNo || '-'}</td>
-                  <td className="px-6 py-4">{s.className || '-'}</td>
-                  <td className="px-6 py-4">{s.phone || '-'}</td>
+                  <td className="px-6 py-4">{s.rollNo || "-"}</td>
+                  <td className="px-6 py-4">{s.className || "-"}</td>
+                  <td className="px-6 py-4">{s.phone || "-"}</td>
                 </tr>
               ))}
             </tbody>

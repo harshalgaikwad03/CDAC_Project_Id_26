@@ -54,6 +54,8 @@ public class StudentController {
                 .getName();
         return service.findByLoggedInSchool(email);
     }
+    
+    
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY') or hasRole('SCHOOL') or hasRole('STUDENT')")

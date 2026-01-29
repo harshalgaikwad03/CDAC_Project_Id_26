@@ -15,4 +15,5 @@ public interface BusRepository extends JpaRepository<Bus, Long> {
     Optional<Bus> findByDriverId(Long driverId);
 
     long countBySchoolId(Long schoolId);
+    
 }

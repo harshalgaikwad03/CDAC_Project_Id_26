@@ -17,10 +17,7 @@ public class Agency extends User { // <--- NOW EXTENDS USER
     @Column(nullable = false)
     private String address;
 
-	public Object getAgencyName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
     
     // It inherits name, phone, email, password, role from User automatically!
 }

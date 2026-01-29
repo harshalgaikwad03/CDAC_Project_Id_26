@@ -1,5 +1,7 @@
 package com.eduride.service;
 
+import com.eduride.dto.BusDTO;
+
 import com.eduride.entity.*;
 import com.eduride.exception.ResourceNotFoundException;
 import com.eduride.repository.*;
@@ -173,4 +175,81 @@ public class BusService {
         }
         busRepository.deleteById(id);
     }
+    
+    public List<Bus> findByLoggedInSchool(String email) {
+        School school = schoolRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("School not found"));
+        return busRepository.findBySchoolId(school.getId());
+    }
+
+    
+    public List<BusDTO> getBusesBySchool(Long schoolId) {
+        return busRepository.findBySchoolId(schoolId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    private BusDTO toDTO(Bus bus) {
+
+    	Long schoolId = null;
+        String schoolName = null;
+        if (bus.getSchool() != null) {
+        	schoolId = bus.getSchool().getId();
+            schoolName = bus.getSchool().getName();
+        }
+        
+        Long driverId = null;
+        String driverName = null;
+        String driverPhone = null;
+        if (bus.getDriver() != null) {
+        	driverId = bus.getDriver().getId();
+            driverName = bus.getDriver().getName();
+            driverPhone = bus.getDriver().getPhone();
+        }
+
+        String helperName = null;
+        String helperPhone = null;
+
+        BusHelper helper = helperRepository
+                .findByAssignedBusId(bus.getId())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        if (helper != null) {
+            helperName = helper.getName();
+            helperPhone = helper.getPhone();
+        }
+
+        return new BusDTO(
+                bus.getId(),
+                bus.getBusNumber(),
+                bus.getCapacity(),
+                schoolId,
+                schoolName,
+                driverId,
+                driverName,
+                driverPhone,
+                helperName,
+                helperPhone
+        );
+    }
+    
+    
+    public List<BusDTO> findByAgencyDTO(Long agencyId) {
+        return busRepository.findByAgencyId(agencyId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+ // ✅ SINGLE BUS DTO (FOR EDIT PAGE)
+    public BusDTO getBusDTOById(Long busId) {
+        Bus bus = findById(busId);
+        return toDTO(bus);
+    }
+
+
+
 }

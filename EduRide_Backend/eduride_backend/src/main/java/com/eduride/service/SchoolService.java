@@ -94,27 +94,19 @@ public class SchoolService {
         long totalStudents = studentRepository.countBySchoolId(schoolId);
         long totalBuses = busRepository.countBySchoolId(schoolId);
 
-        long presentCount = studentStatusRepository.countByStudentSchoolIdAndDateAndPickupStatus(
-                schoolId, today, "PRESENT"   // ← IMPORTANT: change this string to match your actual PickupStatus value
-        );
+        long presentCount =
+                studentStatusRepository.countByStudentSchoolIdAndDateAndPickupStatus(
+                        schoolId, today, "PICKED"
+                );
 
-        long studentsWithStatusToday = studentStatusRepository.countByStudentSchoolIdAndDate(
-                schoolId, today
-        );
-        long absentCount = studentsWithStatusToday - presentCount;
+        long absentCount = totalStudents - presentCount;
+        if (absentCount < 0) absentCount = 0;
 
-        double attendancePercentage = totalStudents > 0
-                ? (presentCount * 100.0) / totalStudents
-                : 0.0;
-
-        // Use inherited getName() from User — no need for getSchoolName()
-        String displayName = school.getName();
-        if (displayName == null || displayName.trim().isEmpty()) {
-            displayName = "Unnamed School";
-        }
+        double attendancePercentage =
+                totalStudents > 0 ? (presentCount * 100.0) / totalStudents : 0.0;
 
         return new SchoolDashboardSummaryDTO(
-                displayName,
+                school.getName(),
                 totalStudents,
                 totalBuses,
                 presentCount,
@@ -122,4 +114,5 @@ public class SchoolService {
                 attendancePercentage
         );
     }
+
 }
