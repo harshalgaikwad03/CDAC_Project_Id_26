@@ -1,5 +1,6 @@
 package com.eduride.controller;
 
+import com.eduride.dto.DriverDTO;
 import com.eduride.dto.dashboard.DriverDashboardSummaryDTO;
 import com.eduride.entity.Driver;
 import com.eduride.service.DriverService;
@@ -28,12 +29,11 @@ public class DriverController {
     public Driver getMyProfile() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return service.findByEmail(email)
-        		.orElseThrow(() -> new ResponseStatusException(
+                .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Driver profile not found for email: " + email));
     }
 
-    
     // ─── Existing unchanged ───
     @PostMapping("/signup")
     public Driver create(@RequestBody Driver driver) {
@@ -70,18 +70,25 @@ public class DriverController {
         return service.findByAgency(agencyId);
     }
 
-    // ─── NEW: Dashboard summary for Driver ───
+    // ─── Driver Dashboard ───
     @GetMapping("/dashboard/summary")
     @PreAuthorize("hasRole('DRIVER')")
-    public DriverDashboardSummaryDTO getDriverDashboardSummary() {
-        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        return service.getDriverDashboardSummary(currentEmail);
+    public DriverDashboardSummaryDTO getSummary() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return service.getSummary(email);
     }
     
+    @GetMapping("/agency/me")
+    @PreAuthorize("hasRole('AGENCY')")
+    public List<DriverDTO> getMyDrivers() {
+        return service.getDriversForLoggedInAgency();
+    }
+
+
     @GetMapping("/agency/{agencyId}/unassigned")
     @PreAuthorize("hasRole('AGENCY')")
     public List<Driver> getUnassignedDrivers(@PathVariable Long agencyId) {
         return service.findUnassignedDriversByAgency(agencyId);
     }
-
 }

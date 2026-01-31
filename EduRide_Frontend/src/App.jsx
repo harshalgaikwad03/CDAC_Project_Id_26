@@ -31,6 +31,9 @@ import AgencyServices from "./pages/Services/AgencyServices/AgencyServices";
 import AddBus from "./pages/Services/AgencyServices/AddBus";
 import BusDetails from "./pages/Services/AgencyServices/BusDetails";
 import BusEdit from "./pages/Services/AgencyServices/BusEdit";
+import DriverList from "./pages/Services/AgencyServices/DriverList";
+import EditDriver from "./pages/Services/AgencyServices/EditDriver";
+
 
 // School Services (all new/updated files)
 import SchoolServices from "./pages/Services/SchoolServices/SchoolServices";
@@ -74,6 +77,9 @@ function App() {
           <Route path="/agency/services/add-bus" element={<AddBus />} />
           <Route path="/agency/services/buses" element={<BusDetails />} />
           <Route path="/agency/services/edit-bus/:busId" element={<BusEdit />} />
+          <Route path="/agency/services/drivers" element={<DriverList />} />
+          <Route path="/agency/services/edit-driver/:driverId" element={<EditDriver />} />
+
 
           {/* ─── School Protected Routes ─── */}
           <Route path="/school/services" element={<SchoolServices />} />

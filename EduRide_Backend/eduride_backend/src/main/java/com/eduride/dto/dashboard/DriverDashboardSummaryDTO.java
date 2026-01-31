@@ -1,4 +1,3 @@
-// com.eduride.dto.dashboard/DriverDashboardSummaryDTO.java
 package com.eduride.dto.dashboard;
 
 import lombok.AllArgsConstructor;
@@ -6,12 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class DriverDashboardSummaryDTO {
+
     private String busNumber;
-    private String routeName;           // e.g. "Morning School Route"
-    private String status;              // "On Time", "Delayed", etc.
-    private int totalStudentsToday;
-    private int pickedUpCount;
+
+    private int totalStudents;
+
+    private int pickedHomeToSchool;
+    private int droppedSchoolToHome;
 }
+

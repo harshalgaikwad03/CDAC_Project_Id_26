@@ -19,16 +19,18 @@ function BusEdit() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // ✅ NEW: success message
+  const [success, setSuccess] = useState(null);
+
+  /* ---------------- LOAD BUS + SCHOOLS + DRIVERS ---------------- */
   useEffect(() => {
     const fetchData = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
 
-        // 1️⃣ Fetch bus (BusDTO)
         const busRes = await API.get(`/buses/${busId}`);
         const bus = busRes.data;
 
-        // ✅ IMPORTANT: convert IDs to STRING
         setFormData({
           busNumber: bus.busNumber || "",
           capacity: bus.capacity || "",
@@ -36,18 +38,15 @@ function BusEdit() {
           driverId: bus.driverId ? String(bus.driverId) : "",
         });
 
-        // 2️⃣ Fetch schools
         const schoolsRes = await API.get(`/schools/agency/${user.id}`);
         setSchools(schoolsRes.data || []);
 
-        // 3️⃣ Fetch unassigned drivers
         const driversRes = await API.get(
           `/drivers/agency/${user.id}/unassigned`
         );
 
         let driverList = driversRes.data || [];
 
-        // ✅ INCLUDE currently assigned driver (BusDTO-safe)
         if (bus.driverId) {
           const exists = driverList.some(
             (d) => String(d.id) === String(bus.driverId)
@@ -64,6 +63,7 @@ function BusEdit() {
 
         setDrivers(driverList);
       } catch (err) {
+        console.error(err);
         setError("Failed to load bus details");
       }
     };
@@ -71,6 +71,7 @@ function BusEdit() {
     fetchData();
   }, [busId]);
 
+  /* ---------------- FORM CHANGE ---------------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -79,10 +80,12 @@ function BusEdit() {
     }));
   };
 
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
       const payload = {
@@ -97,8 +100,17 @@ function BusEdit() {
       };
 
       await API.put(`/buses/${busId}`, payload);
-      navigate("/agency/services/buses");
+
+      // ✅ SHOW SUCCESS MESSAGE
+      setSuccess("Bus updated successfully ✅");
+
+      // ✅ REDIRECT AFTER 2 SECONDS
+      setTimeout(() => {
+        navigate("/agency/services/buses");
+      }, 2000);
+
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.message || "Failed to update bus");
     } finally {
       setLoading(false);
@@ -111,9 +123,17 @@ function BusEdit() {
         Edit Bus Details
       </h1>
 
+      {/* ❌ ERROR MESSAGE */}
       {error && (
         <div className="bg-red-50 p-4 mb-6 rounded text-red-700">
           {error}
+        </div>
+      )}
+
+      {/* ✅ SUCCESS MESSAGE */}
+      {success && (
+        <div className="bg-green-50 p-4 mb-6 rounded text-green-700 text-center">
+          {success}
         </div>
       )}
 
@@ -121,7 +141,6 @@ function BusEdit() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-xl shadow-lg space-y-6"
       >
-        {/* Bus Number */}
         <div>
           <label className="block font-medium mb-2">Bus Number</label>
           <input
@@ -133,7 +152,6 @@ function BusEdit() {
           />
         </div>
 
-        {/* Capacity */}
         <div>
           <label className="block font-medium mb-2">Capacity</label>
           <input
@@ -147,7 +165,6 @@ function BusEdit() {
           />
         </div>
 
-        {/* Assign School */}
         <div>
           <label className="block font-medium mb-2">Assign School</label>
           <select
@@ -165,7 +182,6 @@ function BusEdit() {
           </select>
         </div>
 
-        {/* Assign Driver */}
         <div>
           <label className="block font-medium mb-2">Assign Driver</label>
           <select

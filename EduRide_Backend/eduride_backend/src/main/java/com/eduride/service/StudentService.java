@@ -4,6 +4,7 @@ import com.eduride.entity.Role;
 import com.eduride.entity.School;
 import com.eduride.entity.Student;
 import com.eduride.exception.ResourceNotFoundException;
+import com.eduride.repository.BusRepository;
 import com.eduride.repository.SchoolRepository;
 import com.eduride.repository.StudentRepository;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.eduride.dto.StudentDTO;
+import com.eduride.dto.StudentSignupDTO;
+import com.eduride.mapper.StudentMapper;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -21,15 +27,17 @@ public class StudentService {
     private final StudentRepository repo;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BusRepository busRepository;
 
     public StudentService(
             StudentRepository repo,
             SchoolRepository schoolRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder, BusRepository busRepository
     ) {
         this.repo = repo;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
+		this.busRepository = busRepository;
     }
 
     // CREATE
@@ -66,9 +74,103 @@ public class StudentService {
 
         return repo.findBySchoolId(school.getId());
     }
+    
+    
+    
+    
+    public Student createFromSignup(StudentSignupDTO dto) {
+
+//        if (repo.existsByEmail(dto.email())) {
+//            throw new ResponseStatusException(
+//                HttpStatus.CONFLICT,
+//                "Email already registered"
+//            );
+//        }
+
+        School school = schoolRepository.findById(dto.schoolId())
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "School not found"
+            ));
+
+        Student student = new Student();
+        student.setName(dto.name());
+        student.setEmail(dto.email());
+        student.setPassword(passwordEncoder.encode(dto.password()));
+        student.setPhone(dto.phone());
+        student.setRollNo(dto.rollNo());
+        student.setClassName(dto.className());
+        student.setAddress(dto.address());
+
+        // 🔐 SECURITY-CONTROLLED FIELDS
+        student.setRole(Role.STUDENT);
+        student.setPassStatus("INACTIVE"); // payment-controlled
+        student.setSchool(school);
+
+        if (dto.busId() != null) {
+            student.setAssignedBus(
+                busRepository.findById(dto.busId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Bus not found"
+                    ))
+            );
+        }
+
+        return repo.save(student);
+    }
+
+    
+    
+    
+    
+    
+    
+    
 
     // UPDATE
-    public Student update(Long id, Student updated) {
+//    public Student update(Long id, Student updated) {
+//        Student existing = findById(id);
+//
+//        String currentEmail = SecurityContextHolder.getContext()
+//                .getAuthentication().getName();
+//
+//        String role = SecurityContextHolder.getContext()
+//                .getAuthentication()
+//                .getAuthorities()
+//                .iterator()
+//                .next()
+//                .getAuthority();
+//
+//        if ("ROLE_STUDENT".equals(role)) {
+//            if (!existing.getEmail().equals(currentEmail)) {
+//                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+//            }
+//        }
+//
+//        if ("ROLE_SCHOOL".equals(role)) {
+//            if (existing.getSchool() == null ||
+//                !existing.getSchool().getEmail().equals(currentEmail)) {
+//                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+//            }
+//        }
+//
+//        existing.setName(updated.getName());
+//        existing.setRollNo(updated.getRollNo());
+//        existing.setClassName(updated.getClassName());
+//        existing.setPhone(updated.getPhone());
+//        existing.setAddress(updated.getAddress());
+//        existing.setPassStatus(updated.getPassStatus());
+//        existing.setAssignedBus(updated.getAssignedBus());
+//
+//        return repo.save(existing);
+//    }
+    
+    
+    
+
+    public StudentDTO update(Long id, Student updated) {
+
         Student existing = findById(id);
 
         String currentEmail = SecurityContextHolder.getContext()
@@ -102,8 +204,31 @@ public class StudentService {
         existing.setPassStatus(updated.getPassStatus());
         existing.setAssignedBus(updated.getAssignedBus());
 
-        return repo.save(existing);
+        Student saved = repo.save(existing);
+
+        return StudentMapper.toDTO(saved);
     }
+
+    
+    public List<StudentDTO> findDTOsByLoggedInSchool(String schoolEmail) {
+        School school = schoolRepository.findByEmail(schoolEmail)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "School not found"
+                ));
+
+        return repo.findBySchoolId(school.getId())
+                   .stream()
+                   .map(StudentMapper::toDTO)
+                   .toList();
+    }
+
+    
+    
+    
+    
+    
+    
 
     // DELETE
     public void delete(Long id) {
@@ -120,7 +245,6 @@ public class StudentService {
     public List<Student> findByBus(Long busId) {
         return repo.findByAssignedBusId(busId);
     }
-<<<<<<< HEAD
 
     // ✅ NEW: METHOD TO ACTIVATE PASS
     public void activatePass(Long id) {
@@ -128,8 +252,7 @@ public class StudentService {
         student.setPassStatus("ACTIVE");
         repo.save(student);
     }
-}
-=======
+
     
     public List<Student> findStudentsByHelperEmail(String email) {
         return repo.findByAssignedBusBusHelpersEmail(email);
@@ -137,4 +260,4 @@ public class StudentService {
 
 
 }
->>>>>>> origin/main
+

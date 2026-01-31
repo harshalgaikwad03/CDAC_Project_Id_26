@@ -32,11 +32,22 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+            // ─────────────────────────────────────────────
+            // CORS + CSRF
+            // ─────────────────────────────────────────────
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+
+            // ─────────────────────────────────────────────
+            // Stateless JWT authentication
+            // ─────────────────────────────────────────────
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+
+            // ─────────────────────────────────────────────
+            // AUTHORIZATION RULES
+            // ─────────────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
 
                 // 1️⃣ PREFLIGHT & SWAGGER
@@ -61,12 +72,29 @@ public class SecurityConfig {
                 .requestMatchers("/api/agencies/dashboard/**").hasRole("AGENCY")
                 .requestMatchers("/api/drivers/dashboard/**").hasRole("DRIVER")
 
-                // 6️⃣ STUDENTS (ORDER IS IMPORTANT)
-                .requestMatchers(HttpMethod.GET, "/api/students/school/me")
-                .hasRole("SCHOOL")
-                
-                .requestMatchers("/api/students/**")
-                .hasAnyRole("STUDENT", "AGENCY", "SCHOOL")
+                // 6️⃣ STUDENTS
+             // 6️⃣ STUDENTS
+
+             // School-only: own students
+             .requestMatchers(HttpMethod.GET, "/api/students/school/me")
+             .hasRole("SCHOOL")
+
+             // Read students
+             .requestMatchers(HttpMethod.GET, "/api/students/**")
+             .hasAnyRole("SCHOOL", "AGENCY")
+
+             // Update students
+//             .requestMatchers(HttpMethod.PUT, "/api/students/**")
+//             .hasAnyRole("STUDENT", "SCHOOL", "AGENCY")
+
+             // Other student APIs
+             .requestMatchers(HttpMethod.GET, "/api/students/*")
+             .hasAnyRole("STUDENT", "SCHOOL", "AGENCY")
+
+             .requestMatchers(HttpMethod.GET, "/api/students")
+             .hasAnyRole("SCHOOL", "AGENCY")
+
+
 
                 // 7️⃣ SCHOOLS
                 .requestMatchers("/api/schools/agency/**").hasRole("AGENCY")
@@ -74,41 +102,103 @@ public class SecurityConfig {
 
                 // 8️⃣ AGENCY
                 .requestMatchers("/api/agencies/**").hasRole("AGENCY")
-               
-                .requestMatchers("/api/drivers/agency/**").hasRole("AGENCY")
 
-                // 9️⃣ DRIVERS
+                // ─────────────────────────────────────────────
+                // 9️⃣ DRIVERS  🔴 ORDER IS CRITICAL
+                // ─────────────────────────────────────────────
+
+                // ✅ DELETE driver → ONLY AGENCY
+                // MUST come BEFORE generic /api/drivers/**
+                .requestMatchers(HttpMethod.DELETE, "/api/drivers/**")
+                .hasRole("AGENCY")
+
+                // Agency-specific driver APIs
+                .requestMatchers("/api/drivers/agency/**")
+                .hasRole("AGENCY")
+
+                // Driver self profile
+                .requestMatchers("/api/drivers/me")
+                .hasRole("DRIVER")
+
+                // General driver access (GET / PUT)
                 .requestMatchers("/api/drivers/**")
                 .hasAnyRole("AGENCY", "DRIVER")
 
                 // 🔟 HELPERS
-                .requestMatchers("/api/helpers/**", "/api/bus-helpers/**")
-                .hasAnyRole("AGENCY", "SCHOOL", "HELPER")
+             // 🔟 HELPERS (EDIT – SCHOOL / AGENCY ONLY)
+             // 🔟 HELPERS
 
-                // 1️⃣1️⃣ BUSES  ✅ (NECESSARY FIX HERE)
-                
+             // Helper: view assigned students
+             .requestMatchers(HttpMethod.GET, "/api/helpers/students")
+             .hasRole("HELPER")
+
+             // Helper: mark student status
+             .requestMatchers(HttpMethod.POST, "/api/helpers/student-status")
+             .hasRole("HELPER")
+
+             // Edit helper (School / Agency)
+             .requestMatchers(HttpMethod.GET, "/api/helpers/*/edit")
+             .hasAnyRole("SCHOOL", "AGENCY")
+
+             // Generic helper access
+             .requestMatchers("/api/helpers/**", "/api/bus-helpers/**")
+             .hasAnyRole("AGENCY", "SCHOOL", "HELPER")
+
+
+                // ─────────────────────────────────────────────
+                // 1️⃣1️⃣ BUSES  ✅ FIXED SECTION
+                // ─────────────────────────────────────────────
+
+                // ✅ School can access its own buses
+             // ✅ School + Agency can assign helper
+                .requestMatchers(HttpMethod.PUT, "/api/buses/*/assign-helper/*")
+                .hasAnyRole("SCHOOL", "AGENCY")
+
+                // ❌ Agency-only for all other PUTs
+                .requestMatchers(HttpMethod.PUT, "/api/buses/**")
+                .hasRole("AGENCY")
+
                 .requestMatchers(HttpMethod.GET, "/api/buses/school/**")
                 .hasRole("SCHOOL")
 
+                // ✅ Agency + School can READ buses
                 .requestMatchers(HttpMethod.GET, "/api/buses/**")
                 .hasAnyRole("AGENCY", "SCHOOL")
 
-                .requestMatchers("/api/buses/**")
+                // ❌ PROBLEMATIC RULE (COMMENTED — DO NOT REMOVE)
+                // This rule was blocking SCHOOL access to /api/buses/school/me
+                // .requestMatchers("/api/buses/**")
+                // .hasRole("AGENCY")
+
+                // ✅ FIX: Agency-only for WRITE operations
+                .requestMatchers(HttpMethod.POST, "/api/buses/**")
+                .hasRole("AGENCY")
+
+                .requestMatchers(HttpMethod.PUT, "/api/buses/**")
+                .hasRole("AGENCY")
+
+                .requestMatchers(HttpMethod.DELETE, "/api/buses/**")
                 .hasRole("AGENCY")
 
                 // 1️⃣2️⃣ STUDENT STATUS
+//                .requestMatchers("/api/student-status/**")
+//                .hasAnyRole("AGENCY", "SCHOOL", "STUDENT", "HELPER")
                 .requestMatchers("/api/student-status/**")
-                .hasAnyRole("AGENCY", "SCHOOL", "STUDENT", "HELPER")
+                .authenticated()
 
                 // 1️⃣3️⃣ EVERYTHING ELSE
                 .anyRequest().authenticated()
             );
 
+        // JWT FILTER
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
-    // CORS
+    // ─────────────────────────────────────────────
+    // CORS CONFIG
+    // ─────────────────────────────────────────────
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -122,13 +212,17 @@ public class SecurityConfig {
         return source;
     }
 
+    // ─────────────────────────────────────────────
     // PASSWORD ENCODER
+    // ─────────────────────────────────────────────
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
+    // ─────────────────────────────────────────────
     // AUTH MANAGER
+    // ─────────────────────────────────────────────
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config

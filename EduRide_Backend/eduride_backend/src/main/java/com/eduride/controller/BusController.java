@@ -60,9 +60,18 @@ public class BusController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY')")
-    public Bus update(@PathVariable Long id, @RequestBody Bus bus) {
-        return service.update(id, bus);
+    public BusDTO update(@PathVariable Long id, @RequestBody Bus bus) {
+        Bus updated = service.update(id, bus);
+        return service.getBusDTOById(updated.getId());
     }
+
+    @PutMapping("/{busId}/unassign-driver")
+    @PreAuthorize("hasRole('AGENCY')")
+    public ResponseEntity<Void> unassignDriver(@PathVariable Long busId) {
+        service.unassignDriver(busId);
+        return ResponseEntity.ok().build();
+    }
+
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('AGENCY')")
@@ -71,6 +80,7 @@ public class BusController {
         return ResponseEntity.noContent().build();
     }
 
+    
     @GetMapping("/agency/{agencyId}")
     @PreAuthorize("hasRole('AGENCY')")
     public List<BusDTO> getByAgency(@PathVariable Long agencyId) {
@@ -133,10 +143,14 @@ public class BusController {
     
     @GetMapping("/school/me")
     @PreAuthorize("hasRole('SCHOOL')")
-    public List<Bus> getBusesForMySchool() {
+    public List<BusDTO> getBusesForMySchool() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
-        return service.findByLoggedInSchool(email);
+
+        School school = schoolService.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        return service.getBusesBySchool(school.getId());
     }
 
 }

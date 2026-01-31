@@ -95,7 +95,7 @@ public class SchoolService {
         long totalBuses = busRepository.countBySchoolId(schoolId);
 
         long presentCount =
-                studentStatusRepository.countByStudentSchoolIdAndDateAndPickupStatus(
+                studentStatusRepository.countByStudent_School_IdAndDateAndPickupStatus(
                         schoolId, today, "PICKED"
                 );
 

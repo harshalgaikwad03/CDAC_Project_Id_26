@@ -1,18 +1,28 @@
 package com.eduride.controller;
 
-import com.eduride.entity.Student;
-import com.eduride.entity.StudentStatus;
-import com.eduride.service.StudentService;
-import com.eduride.service.StudentStatusService;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.eduride.dto.HelperStudentStatusDTO;
+import com.eduride.dto.StudentStatusDTO;
+import com.eduride.entity.Student;
+import com.eduride.entity.StudentStatus;
+import com.eduride.service.StudentService;
+import com.eduride.service.StudentStatusService;
 
 @RestController
 @RequestMapping("/api/student-status")
@@ -65,24 +75,50 @@ public class StudentStatusController {
     }
 
     // FIXED: Proper Optional handling with type-safe return
+//    @GetMapping("/today/{studentId}")
+//    @PreAuthorize("hasAnyRole('AGENCY','SCHOOL','STUDENT','HELPER')")
+//    public ResponseEntity<StudentStatus> getTodayStatus(@PathVariable Long studentId) {
+//
+//        return statusService.findTodayStatusForStudent(studentId)
+//                .map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.noContent().build());
+//    }
+    
     @GetMapping("/today/{studentId}")
-    @PreAuthorize("hasAnyRole('AGENCY','SCHOOL','STUDENT','HELPER')")
-    public ResponseEntity<StudentStatus> getTodayStatus(@PathVariable Long studentId) {
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<StudentStatusDTO> getTodayStatus(
+            @PathVariable Long studentId
+    ) {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
-        return statusService.findTodayStatusForStudent(studentId)
+        Student student = studentService.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // 🔐 SECURITY CHECK: student can only access their own status
+        if (!student.getId().equals(studentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        return statusService
+                .getTodayStatus(studentId)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.noContent().build());
+                .orElse(ResponseEntity.noContent().build());
     }
+
 
     
 
     // Get all student statuses for a school on today's date
     @GetMapping("/school/{schoolId}/today")
     @PreAuthorize("hasRole('SCHOOL')")
-    public List<StudentStatus> getTodayBySchool(@PathVariable Long schoolId) {
-        LocalDate today = LocalDate.now();
-        return statusService.findBySchoolIdAndDate(schoolId, today);
+    public List<HelperStudentStatusDTO> getTodayBySchool(
+            @PathVariable Long schoolId
+    ) {
+        return statusService.findTodayBySchoolDTO(schoolId);
     }
+
 
     private void checkStudentAccess(Long studentId) {
         String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();

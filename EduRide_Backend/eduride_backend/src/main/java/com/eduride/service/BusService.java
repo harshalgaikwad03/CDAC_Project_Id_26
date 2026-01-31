@@ -1,7 +1,6 @@
 package com.eduride.service;
 
 import com.eduride.dto.BusDTO;
-
 import com.eduride.entity.*;
 import com.eduride.exception.ResourceNotFoundException;
 import com.eduride.repository.*;
@@ -22,19 +21,22 @@ public class BusService {
     private final DriverRepository driverRepository;
     private final SchoolRepository schoolRepository;
     private final BusHelperRepository helperRepository;
-
+    private final StudentRepository studentRepository;
     public BusService(
             BusRepository busRepository,
             AgencyRepository agencyRepository,
             DriverRepository driverRepository,
             SchoolRepository schoolRepository,
-            BusHelperRepository helperRepository
+            BusHelperRepository helperRepository, 
+            StudentRepository studentRepository
+            
     ) {
         this.busRepository = busRepository;
         this.agencyRepository = agencyRepository;
         this.driverRepository = driverRepository;
         this.schoolRepository = schoolRepository;
         this.helperRepository = helperRepository;
+		this.studentRepository = studentRepository;
     }
 
     // ─────────────────────────────────────────────
@@ -44,14 +46,24 @@ public class BusService {
         Agency agency = getLoggedInAgency();
         bus.setAgency(agency);
 
+        // ✅ CHECK: Duplicate Bus Number
+        busRepository.findByBusNumber(bus.getBusNumber())
+                .ifPresent(existing -> {
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "Bus number already exists"
+                    );
+                });
+
         assignSchool(bus, agency);
         assignDriver(bus, agency, null);
 
         return busRepository.save(bus);
     }
 
+
     // ─────────────────────────────────────────────
-    // UPDATE BUS (✔ FULLY FIXED)
+    // UPDATE BUS (✔ FIXED DRIVER ASSIGNMENT)
     // ─────────────────────────────────────────────
     public Bus update(Long id, Bus updated) {
         Bus existing = findById(id);
@@ -60,11 +72,31 @@ public class BusService {
         existing.setBusNumber(updated.getBusNumber());
         existing.setCapacity(updated.getCapacity());
 
-        // 🔥 CRITICAL: copy incoming relations
-        existing.setSchool(updated.getSchool());
-        existing.setDriver(updated.getDriver());
+        /*
+         ❌ OLD BUGGY CODE (DETACHED ENTITIES – DRIVER NOT SAVED)
+         existing.setSchool(updated.getSchool());
+         existing.setDriver(updated.getDriver());
+        */
 
-        // Validate & assign safely
+        // ✅ Attach MANAGED School entity
+        if (updated.getSchool() != null && updated.getSchool().getId() != null) {
+            School school = schoolRepository.findById(updated.getSchool().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("School not found"));
+            existing.setSchool(school);
+        } else {
+            existing.setSchool(null);
+        }
+
+        // ✅ Attach MANAGED Driver entity (🔥 FIX)
+        if (updated.getDriver() != null && updated.getDriver().getId() != null) {
+            Driver driver = driverRepository.findById(updated.getDriver().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
+            existing.setDriver(driver);
+        } else {
+            existing.setDriver(null);
+        }
+
+        // Validation
         assignSchool(existing, agency);
         assignDriver(existing, agency, existing.getId());
 
@@ -76,7 +108,8 @@ public class BusService {
     // ─────────────────────────────────────────────
     private Agency getLoggedInAgency() {
         String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+                .getAuthentication()
+                .getName();
 
         Agency agency = agencyRepository.findByEmail(email)
                 .orElseThrow(() ->
@@ -169,20 +202,58 @@ public class BusService {
         return busRepository.findByDriverId(driverId).orElse(null);
     }
 
-    public void delete(Long id) {
-        if (!busRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Bus not found");
+    public void unassignDriver(Long busId) {
+
+        Bus bus = busRepository.findById(busId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Bus not found"
+            ));
+
+        if (bus.getDriver() == null) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT, "No driver assigned to this bus"
+            );
         }
-        busRepository.deleteById(id);
-    }
-    
-    public List<Bus> findByLoggedInSchool(String email) {
-        School school = schoolRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("School not found"));
-        return busRepository.findBySchoolId(school.getId());
+
+        bus.setDriver(null);
+        busRepository.save(bus);
     }
 
     
+    @Transactional
+    public void delete(Long id) {
+        Bus bus = busRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
+
+        // 🔹 1. Unassign helpers
+        List<BusHelper> helpers = helperRepository.findByAssignedBusId(bus.getId());
+        for (BusHelper helper : helpers) {
+            helper.setAssignedBus(null);
+        }
+
+        // 🔹 2. Unassign students
+        List<Student> students = studentRepository.findByAssignedBusId(bus.getId());
+        for (Student student : students) {
+            student.setAssignedBus(null);
+        }
+
+        // 🔹 3. Unassign driver
+        bus.setDriver(null);
+
+        // 🔹 4. Unassign school (optional but safe)
+        bus.setSchool(null);
+
+        // 🔹 5. Now delete bus safely
+        busRepository.delete(bus);
+    }
+
+
+    public List<Bus> findByLoggedInSchool(String email) {
+        School school = schoolRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("School not found"));
+        return busRepository.findBySchoolId(school.getId());
+    }
+
     public List<BusDTO> getBusesBySchool(Long schoolId) {
         return busRepository.findBySchoolId(schoolId)
                 .stream()
@@ -192,18 +263,18 @@ public class BusService {
 
     private BusDTO toDTO(Bus bus) {
 
-    	Long schoolId = null;
+        Long schoolId = null;
         String schoolName = null;
         if (bus.getSchool() != null) {
-        	schoolId = bus.getSchool().getId();
+            schoolId = bus.getSchool().getId();
             schoolName = bus.getSchool().getName();
         }
-        
+
         Long driverId = null;
         String driverName = null;
         String driverPhone = null;
         if (bus.getDriver() != null) {
-        	driverId = bus.getDriver().getId();
+            driverId = bus.getDriver().getId();
             driverName = bus.getDriver().getName();
             driverPhone = bus.getDriver().getPhone();
         }
@@ -235,8 +306,7 @@ public class BusService {
                 helperPhone
         );
     }
-    
-    
+
     public List<BusDTO> findByAgencyDTO(Long agencyId) {
         return busRepository.findByAgencyId(agencyId)
                 .stream()
@@ -244,12 +314,9 @@ public class BusService {
                 .toList();
     }
 
- // ✅ SINGLE BUS DTO (FOR EDIT PAGE)
+    // ✅ SINGLE BUS DTO (FOR EDIT PAGE)
     public BusDTO getBusDTOById(Long busId) {
         Bus bus = findById(busId);
         return toDTO(bus);
     }
-
-
-
 }

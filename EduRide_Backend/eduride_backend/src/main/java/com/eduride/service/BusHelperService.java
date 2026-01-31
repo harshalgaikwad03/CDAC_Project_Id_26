@@ -1,19 +1,22 @@
 package com.eduride.service;
 
-import com.eduride.dto.BusHelperUpdateDTO;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.eduride.dto.BusHelperEditDTO;
+import com.eduride.dto.BusHelperResponseDTO;
 import com.eduride.dto.dashboard.BusHelperDashboardSummaryDTO;
-import com.eduride.entity.Bus;
 import com.eduride.entity.BusHelper;
 import com.eduride.entity.Role;
 import com.eduride.exception.ResourceNotFoundException;
 import com.eduride.repository.BusHelperRepository;
 import com.eduride.repository.BusRepository;
+import com.eduride.repository.SchoolRepository;
 import com.eduride.repository.StudentRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
+import com.eduride.repository.StudentStatusRepository;
 
 @Service
 public class BusHelperService {
@@ -22,17 +25,23 @@ public class BusHelperService {
     private final PasswordEncoder passwordEncoder;
     private final StudentRepository studentRepository;
     private final BusRepository busRepository;
-
+    private final SchoolRepository schoolRepository;
+    private final StudentStatusRepository studentStatusRepository;
+    
     public BusHelperService(
             BusHelperRepository repo,
             PasswordEncoder passwordEncoder,
             StudentRepository studentRepository,
-            BusRepository busRepository
+            BusRepository busRepository, 
+            SchoolRepository schoolRepository, 
+            StudentStatusRepository studentStatusRepository
     ) {
         this.repo = repo;
         this.passwordEncoder = passwordEncoder;
         this.studentRepository = studentRepository;
         this.busRepository = busRepository;
+		this.schoolRepository = schoolRepository;
+		this.studentStatusRepository = studentStatusRepository;
     }
 
     public BusHelper create(BusHelper helper) {
@@ -54,27 +63,57 @@ public class BusHelperService {
     }
 
     // ✅ FIXED UPDATE (ONLY THIS PART CHANGED)
-    public BusHelper update(Long id, BusHelperUpdateDTO dto) {
-        BusHelper existing = findById(id);
+    public BusHelperEditDTO getForEdit(Long helperId) {
+        BusHelper helper = repo.findById(helperId)
+            .orElseThrow(() -> new ResourceNotFoundException("BusHelper not found"));
 
-        if (dto.getName() != null)
-            existing.setName(dto.getName());
+        BusHelperEditDTO dto = new BusHelperEditDTO();
+        dto.setId(helper.getId());
+        dto.setName(helper.getName());
+        dto.setPhone(helper.getPhone());
+        dto.setSchoolId(helper.getSchool().getId());
+        dto.setAssignedBusId(
+            helper.getAssignedBus() != null
+                ? helper.getAssignedBus().getId()
+                : null
+        );
 
-        if (dto.getPhone() != null)
-            existing.setPhone(dto.getPhone());
+        return dto;
+    }
+    
+    
+    public void updateHelper(Long id, BusHelperEditDTO dto) {
+
+        BusHelper helper = repo.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("BusHelper not found"));
+
+        helper.setName(dto.getName());
+        helper.setPhone(dto.getPhone());
 
         if (dto.getAssignedBusId() != null) {
-            Bus bus = busRepository.findById(dto.getAssignedBusId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Bus not found: " + dto.getAssignedBusId()));
-            existing.setAssignedBus(bus);
+            helper.setAssignedBus(
+                    busRepository.findById(dto.getAssignedBusId())
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException("Bus not found"))
+            );
         } else {
-            existing.setAssignedBus(null);
+            helper.setAssignedBus(null);
         }
 
-        return repo.save(existing);
+        repo.save(helper);
     }
 
+
+    public Long getSchoolIdByEmail(String email) {
+        return schoolRepository.findByEmail(email)
+                .orElseThrow(() ->
+                    new ResourceNotFoundException("School not found for email: " + email)
+                )
+                .getId();
+    }
+
+    
     public void delete(Long id) {
         if (!repo.existsById(id)) {
             throw new ResourceNotFoundException("BusHelper not found with id: " + id);
@@ -82,9 +121,25 @@ public class BusHelperService {
         repo.deleteById(id);
     }
 
-    public List<BusHelper> findBySchool(Long schoolId) {
-        return repo.findBySchoolId(schoolId);
+//    public List<BusHelper> findBySchool(Long schoolId) {
+//        return repo.findBySchoolId(schoolId);
+//    }
+    
+    public List<BusHelperResponseDTO> findBySchool(Long schoolId) {
+        return repo.findBySchoolId(schoolId).stream().map(helper -> {
+            BusHelperResponseDTO dto = new BusHelperResponseDTO();
+            dto.setId(helper.getId());
+            dto.setName(helper.getName());
+            dto.setPhone(helper.getPhone());
+            dto.setBusNumber(
+                helper.getAssignedBus() != null
+                    ? helper.getAssignedBus().getBusNumber()
+                    : null
+            );
+            return dto;
+        }).toList();
     }
+
 
     public List<BusHelper> findByBus(Long busId) {
         return repo.findByAssignedBusId(busId);
@@ -95,23 +150,66 @@ public class BusHelperService {
     }
 
     public BusHelperDashboardSummaryDTO getBusHelperDashboardSummary(String email) {
+
         BusHelper helper = findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Bus Helper not found"));
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Bus Helper not found"));
 
-        String busNumber = helper.getAssignedBus() != null
-                ? helper.getAssignedBus().getBusNumber()
-                : "Not Assigned";
+        // 🟡 Helper not assigned to any bus
+        if (helper.getAssignedBus() == null) {
+            return new BusHelperDashboardSummaryDTO(
+                "Not Assigned",
+                "N/A",
+                0, 0, 0, 0
+            );
+        }
 
-        long totalStudents = helper.getAssignedBus() != null
-                ? studentRepository.findByAssignedBusId(helper.getAssignedBus().getId()).size()
-                : 0;
+        Long busId = helper.getAssignedBus().getId();
+
+        // 🔹 Total students assigned to bus
+        int totalStudents =
+            studentRepository.findByAssignedBusId(busId).size();
+
+        // 🔹 Status counts (STRING based)
+        int picked =
+            studentStatusRepository.countByBusAndStatus(busId, "PICKED");
+
+        int dropped =
+            studentStatusRepository.countByBusAndStatus(busId, "DROPPED");
+
+        int pending = totalStudents - picked - dropped;
 
         return new BusHelperDashboardSummaryDTO(
-                busNumber,
-                "Home → School",
-                (int) totalStudents,
-                (int) (totalStudents * 0.85)
+            helper.getAssignedBus().getBusNumber(),
+            "Home → School",
+            totalStudents,
+            picked,
+            pending,
+            dropped
         );
     }
+
+    
+    
+    public BusHelperResponseDTO getProfile(String email) {
+        BusHelper helper = repo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Helper not found"));
+
+        BusHelperResponseDTO dto = new BusHelperResponseDTO();
+        dto.setId(helper.getId());
+        dto.setName(helper.getName());
+        dto.setEmail(helper.getEmail());
+        dto.setPhone(helper.getPhone());
+        dto.setBusNumber(
+                helper.getAssignedBus() != null
+                        ? helper.getAssignedBus().getBusNumber()
+                        : null
+        );
+
+        return dto;
+    }
+    
+    
+    
+    
 }
