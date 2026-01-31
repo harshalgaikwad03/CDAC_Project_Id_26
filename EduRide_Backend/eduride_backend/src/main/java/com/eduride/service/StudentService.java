@@ -120,7 +120,6 @@ public class StudentService {
     public List<Student> findByBus(Long busId) {
         return repo.findByAssignedBusId(busId);
     }
-<<<<<<< HEAD
 
     // ✅ NEW: METHOD TO ACTIVATE PASS
     public void activatePass(Long id) {
@@ -128,8 +127,7 @@ public class StudentService {
         student.setPassStatus("ACTIVE");
         repo.save(student);
     }
-}
-=======
+
     
     public List<Student> findStudentsByHelperEmail(String email) {
         return repo.findByAssignedBusBusHelpersEmail(email);
@@ -137,4 +135,3 @@ public class StudentService {
 
 
 }
->>>>>>> origin/main
