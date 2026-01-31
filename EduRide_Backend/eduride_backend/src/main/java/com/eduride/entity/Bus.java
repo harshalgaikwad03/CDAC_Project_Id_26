@@ -43,7 +43,7 @@ public class Bus {
 
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id")
+    @JoinColumn(name = "school_id" , nullable = true)
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private School school;
 
@@ -51,8 +51,19 @@ public class Bus {
     // ❌ THIS IS THE CRITICAL FIX
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", unique = true)
-    @JsonIgnore
+    @JsonIgnoreProperties(
+        value = {
+            "password",
+            "agency",
+
+            // ✅ ADD THESE (CRITICAL)
+            "hibernateLazyInitializer",
+            "handler"
+        },
+        allowSetters = true
+    )
     private Driver driver;
+
 
     // ✅ Needed for StudentList
     @OneToMany(mappedBy = "assignedBus", fetch = FetchType.EAGER)

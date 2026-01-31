@@ -2,6 +2,7 @@ package com.eduride.repository;
 
 import com.eduride.entity.StudentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +24,18 @@ public interface StudentStatusRepository extends JpaRepository<StudentStatus, Lo
 	long countByStudentSchoolIdAndDate(Long schoolId, LocalDate today);
 
 	List<StudentStatus> findByStudentSchoolIdAndDate(Long schoolId, LocalDate date);
+
+	int countByStudent_AssignedBus_IdAndDateAndPickupStatus(Long busId,LocalDate date,String pickupStatus);
+
+	@Query("""
+	        SELECT COUNT(ss)
+	        FROM StudentStatus ss
+	        WHERE ss.student.assignedBus.id = :busId
+	          AND ss.date = CURRENT_DATE
+	          AND ss.pickupStatus = :status
+	    """)
+	    int countByBusAndStatus(Long busId, String status);
+	
 	
 
 }

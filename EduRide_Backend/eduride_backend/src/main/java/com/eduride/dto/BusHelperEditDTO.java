@@ -5,9 +5,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BusHelperUpdateDTO {
+public class BusHelperEditDTO  {
 
+	private Long id;
     private String name;
     private String phone;
-    private Long assignedBusId; // ← THIS IS KEY
+    private Long schoolId;
+    private Long assignedBusId;
 }

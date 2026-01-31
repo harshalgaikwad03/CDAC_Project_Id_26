@@ -1,15 +1,20 @@
 package com.eduride.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.eduride.dto.HelperStudentStatusDTO;
+import com.eduride.dto.StudentStatusDTO;
 import com.eduride.entity.BusHelper;
 import com.eduride.entity.Student;
 import com.eduride.entity.StudentStatus;
 import com.eduride.exception.ResourceNotFoundException;
 import com.eduride.repository.StudentStatusRepository;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import jakarta.transaction.Transactional;
 
 @Service
 public class StudentStatusService {
@@ -75,6 +80,13 @@ public class StudentStatusService {
     public Optional<StudentStatus> findTodayStatusForStudent(Long studentId) {
         return repo.findByStudentIdAndDate(studentId, LocalDate.now());
     }
+    
+    public StudentStatus findTodayStatus(Long studentId) {
+        return repo.findByStudentIdAndDate(
+                studentId,
+                LocalDate.now()
+        ).orElse(null);
+    }
 
     // ─── Find all statuses for a school on a specific date ───
     public List<StudentStatus> findBySchoolIdAndDate(Long schoolId, LocalDate date) {
@@ -115,5 +127,50 @@ public class StudentStatusService {
 
         return repo.save(status);
     }
+    
+    
+    public List<HelperStudentStatusDTO> findTodayBySchoolDTO(Long schoolId) {
+
+        LocalDate today = LocalDate.now();
+
+        return repo.findByStudentSchoolIdAndDate(schoolId, today)
+                .stream()
+                .map(status -> {
+
+                    Student s = status.getStudent();
+
+                    HelperStudentStatusDTO dto = new HelperStudentStatusDTO();
+                    dto.setStudentId(s.getId());
+                    dto.setName(s.getName());
+                    dto.setRollNo(s.getRollNo());
+                    dto.setClassName(s.getClassName());
+                    dto.setPhone(s.getPhone());
+                    dto.setPickupStatus(status.getPickupStatus());
+
+                    return dto;
+                })
+                .toList();
+    }
+
+    
+    
+    public static StudentStatusDTO toDTO(StudentStatus ss) {
+        return new StudentStatusDTO(
+            ss.getPickupStatus(),
+            ss.getDate(),
+            ss.getUpdatedBy() != null
+                ? ss.getUpdatedBy().getName()
+                : null
+        );
+    }
+
+    
+    
+    public Optional<StudentStatusDTO> getTodayStatus(Long studentId) {
+        return repo.findByStudentIdAndDate(studentId, LocalDate.now())
+                   .map(StudentStatusService::toDTO);
+    }
+
+
 
 }

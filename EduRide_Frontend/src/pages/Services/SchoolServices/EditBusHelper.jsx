@@ -1,54 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import API from '../../../services/api';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import API from "../../../services/api";
 
 function EditBusHelper() {
   const { helperId } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    assignedBusId: '',
+    name: "",
+    phone: "",
+    assignedBusId: "",
   });
 
-  const [helperData, setHelperData] = useState(null);
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
+  // ─────────────────────────────────────────────
+  // Load helper + buses
+  // ─────────────────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const schoolId = user.id;
 
-        if (!schoolId) throw new Error("Please login again");
-
-        console.log(`Fetching helper ${helperId} for school ${schoolId}`);
-
-        const helperRes = await API.get(`/helpers/${helperId}`);
-        const helper = helperRes.data;
-
-        if (helper.school?.id && helper.school.id !== schoolId) {
-          throw new Error("You are not authorized to edit this helper");
+        if (!schoolId) {
+          throw new Error("Please login again");
         }
 
-        setHelperData(helper);
+        // 1️⃣ Fetch helper (DTO)
+        const helperRes = await API.get(`/helpers/${helperId}/edit`);
+        const helper = helperRes.data;
+
+        // 2️⃣ Populate form
         setFormData({
-          name: helper.name || '',
-          phone: helper.phone || '',
-          assignedBusId: helper.assignedBus?.id ? String(helper.assignedBus.id) : '', // string for <select>
+          name: helper.name || "",
+          phone: helper.phone || "",
+          assignedBusId: helper.assignedBusId
+            ? String(helper.assignedBusId)
+            : "",
         });
 
-        const busesRes = await API.get(`/buses/school/${schoolId}`);
+        // 3️⃣ Fetch buses for dropdown
+        const busesRes = await API.get(`/buses/school/me`);
         setBuses(busesRes.data || []);
-
-        console.log("Helper loaded:", helper);
       } catch (err) {
-        console.error("Fetch error:", err.response || err);
-        setError(err.response?.data?.message || err.message || 'Failed to load data');
+        console.error("Fetch error:", err);
+        setError(
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to load helper"
+        );
       } finally {
         setLoading(false);
       }
@@ -57,35 +61,51 @@ function EditBusHelper() {
     fetchData();
   }, [helperId]);
 
+  // ─────────────────────────────────────────────
+  // Form handlers
+  // ─────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // ─────────────────────────────────────────────
+  // Submit update
+  // ─────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setError(null);
+    setError("");
 
     try {
       const payload = {
         name: formData.name,
         phone: formData.phone || null,
-        assignedBusId: formData.assignedBusId ? Number(formData.assignedBusId) : null, // ← send number or null
-        email: helperData?.email,
+        assignedBusId: formData.assignedBusId
+          ? Number(formData.assignedBusId)
+          : null,
       };
 
       await API.put(`/helpers/${helperId}`, payload);
-      alert('Helper updated successfully!');
-      navigate('/school/services/bus-helpers');
+
+      alert("Bus Helper updated successfully");
+      navigate("/school/services/bus-helpers");
     } catch (err) {
-      console.error("Update error:", err.response || err);
-      setError(err.response?.data?.message || 'Failed to update helper');
+      console.error("Update error:", err);
+      setError(
+        err.response?.data?.message || "Failed to update bus helper"
+      );
     } finally {
       setSaving(false);
     }
   };
 
+  // ─────────────────────────────────────────────
+  // UI states
+  // ─────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -96,50 +116,58 @@ function EditBusHelper() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-center mb-10 text-gray-800">
+      <h1 className="text-3xl font-bold text-center mb-10">
         Edit Bus Helper
       </h1>
 
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r">
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700 rounded">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-lg space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-xl shadow-lg space-y-6"
+      >
+        {/* Name */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">
+          <label className="block font-medium mb-2">
             Name <span className="text-red-500">*</span>
           </label>
           <input
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
             required
+            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
+        {/* Phone */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Phone</label>
+          <label className="block font-medium mb-2">Phone</label>
           <input
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
+        {/* Assigned Bus */}
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Assigned Bus</label>
+          <label className="block font-medium mb-2">
+            Assigned Bus
+          </label>
           <select
             name="assignedBusId"
             value={formData.assignedBusId}
             onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Not Assigned</option>
-            {buses.map(bus => (
+            {buses.map((bus) => (
               <option key={bus.id} value={bus.id}>
                 Bus {bus.busNumber} (Capacity: {bus.capacity})
               </option>
@@ -147,26 +175,17 @@ function EditBusHelper() {
           </select>
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           disabled={saving}
-          className={`w-full py-4 px-6 text-white font-medium rounded-xl transition-all transform ${
+          className={`w-full py-3 rounded-lg text-white font-semibold transition ${
             saving
               ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-lg hover:shadow-xl"
+              : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
-          {saving ? (
-            <span className="flex items-center justify-center">
-              <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Saving...
-            </span>
-          ) : (
-            "Save Changes"
-          )}
+          {saving ? "Saving..." : "Save Changes"}
         </button>
       </form>
     </div>

@@ -1,4 +1,3 @@
-// src/pages/Dashboards/SchoolDashboard.jsx
 import React, { useState, useEffect } from "react";
 import API from "../../services/api";
 
@@ -10,15 +9,12 @@ function SchoolDashboard() {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        const res = await API.get("/schools/dashboard/summary", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        // ✅ token is attached automatically by Axios interceptor
+        const res = await API.get("/schools/dashboard/summary");
         setSummary(res.data);
       } catch (err) {
-        setError("Failed to load school dashboard");
         console.error(err);
+        setError("Failed to load school dashboard");
       } finally {
         setLoading(false);
       }
@@ -27,8 +23,17 @@ function SchoolDashboard() {
     fetchSummary();
   }, []);
 
-  if (loading) return <div className="text-center py-20">Loading...</div>;
-  if (error) return <div className="text-center py-20 text-red-600">{error}</div>;
+  if (loading) {
+    return <div className="text-center py-20">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-600">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

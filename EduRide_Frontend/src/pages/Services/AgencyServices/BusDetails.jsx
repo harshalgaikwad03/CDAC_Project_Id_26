@@ -1,4 +1,4 @@
-// src/pages/Services/AgencyServices/BusDetails.jsx (update your existing – now shows list with edit)
+// src/pages/Services/AgencyServices/BusDetails.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../../services/api";
@@ -28,12 +28,33 @@ function BusDetails() {
     navigate(`/agency/services/edit-bus/${busId}`);
   };
 
+  // ✅ DELETE HANDLER
+  const handleDelete = async (busId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this bus?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await API.delete(`/buses/${busId}`);
+
+      // ✅ Remove from UI instantly
+      setBuses((prev) => prev.filter((bus) => bus.id !== busId));
+    } catch (err) {
+      alert("Failed to delete bus");
+      console.error(err);
+    }
+  };
+
   if (loading) return <div className="text-center py-20">Loading buses...</div>;
   if (error) return <div className="text-center py-20 text-red-600">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-10">All Buses Under Your Agency</h1>
+      <h1 className="text-3xl font-bold text-center mb-10">
+        All Buses Under Your Agency
+      </h1>
 
       {buses.length === 0 ? (
         <div className="text-center text-gray-600 py-20">
@@ -43,8 +64,12 @@ function BusDetails() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {buses.map((bus) => (
             <div key={bus.id} className="bg-white p-6 rounded-xl shadow-md">
-              <h3 className="text-xl font-semibold mb-4">Bus No: {bus.busNumber}</h3>
-              <p className="text-gray-700 mb-2">Capacity: {bus.capacity}</p>
+              <h3 className="text-xl font-semibold mb-4">
+                Bus No: {bus.busNumber}
+              </h3>
+              <p className="text-gray-700 mb-2">
+                Capacity: {bus.capacity}
+              </p>
               <p className="text-gray-700 mb-2">
                 Assigned School: {bus.schoolName || "Not Assigned"}
               </p>
@@ -52,12 +77,22 @@ function BusDetails() {
                 Driver: {bus.driverName || "Not Assigned"}
               </p>
 
-              <button
-                onClick={() => handleEdit(bus.id)}
-                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-lg font-medium transition"
-              >
-                Edit Bus Details
-              </button>
+              {/* ✅ BUTTONS */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleEdit(bus.id)}
+                  className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-3 rounded-lg font-medium transition"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => handleDelete(bus.id)}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

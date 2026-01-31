@@ -8,7 +8,7 @@ function StudentProfile({ user }) {
       <p><b>Phone:</b> {user.phone || "N/A"}</p>
       <p><b>Class:</b> {user.className || "N/A"}</p>
       <p><b>Roll No:</b> {user.rollNo || "N/A"}</p>
-      <p><b>School:</b> {user.school?.name || "N/A"}</p>
+      <p><b>School:</b> {user.schoolName || "N/A"}</p>
     </div>
   );
 }

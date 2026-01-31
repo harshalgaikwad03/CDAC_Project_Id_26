@@ -8,7 +8,11 @@ import HelperProfile from "./HelperProfile";
 import { useNavigate } from "react-router-dom";
 
 function ProfileDropdown() {
-  const role = localStorage.getItem("role")?.toLowerCase()?.replace("role_", "");
+  const role = localStorage
+    .getItem("role")
+    ?.toLowerCase()
+    ?.replace("role_", "");
+
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
@@ -38,16 +42,13 @@ function ProfileDropdown() {
           url = "/helpers/me";
           break;
         default:
-          console.warn("Unknown role:", role);
           return;
       }
 
-      // ✅ NO headers here
       const res = await API.get(url);
       setProfile(res.data);
-
     } catch (err) {
-      console.error("Profile fetch failed:", err);
+      console.error("Profile fetch failed", err);
     }
   };
 

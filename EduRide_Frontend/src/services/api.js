@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// 1. YOUR MAIN BACKEND (Java/Node) - Port 8080
+// 1. MAIN BACKEND (Spring Boot) - 8080
 const API = axios.create({
   baseURL: "http://localhost:8080/api",
   headers: {
@@ -8,28 +8,27 @@ const API = axios.create({
   },
 });
 
-// 2. YOUR NEW .NET LOGGER -
+// 2. LOGGER SERVICE (.NET) - 5199
 const LoggerAPI = axios.create({
-  baseURL: "http://localhost:5199/api", 
+  baseURL: "http://localhost:5199/api",
 });
 
-// Helper function to send logs
+// 🔹 Helper function to send logs (NON-BLOCKING)
 export const logActivity = async (level, message, source, data = null) => {
   try {
-    // We don't await this strictly, so it doesn't slow down the app if logger fails
-    LoggerAPI.post("/logs", {
+    await LoggerAPI.post("/logs", {
       Level: level,
       Message: message,
       Source: source,
-      Data: data ? JSON.stringify(data) : null
+      Data: data ? JSON.stringify(data) : null,
     });
-  } catch (error) {
-    // Fail silently so the user doesn't know logging failed
-    console.error("Logger Service Failed:", error); 
+  } catch {
+    // 🔴 MUST NEVER BLOCK MAIN APP
+    console.warn("Logger Service Failed (ignored)");
   }
 };
 
-// ... Existing Interceptors (Keep these exactly as they were) ...
+// 🔹 Request Interceptor (JWT)
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -41,13 +40,28 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// 🔹 Response Interceptor (DO NOT MODIFY STATUS CODES)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // 🔐 Auto logout only on AUTH failure
+    if (error?.response?.status === 401) {
       localStorage.clear();
       window.location.href = "/login";
+      return; // stop execution
     }
+
+    // 🛡 Ensure error object is always usable by UI
+    if (!error.response) {
+      error.response = {
+        status: 0,
+        data: {
+          message: "Network error. Please check your connection.",
+        },
+      };
+    }
+
+    // 🔴 IMPORTANT: never swallow backend error
     return Promise.reject(error);
   }
 );
