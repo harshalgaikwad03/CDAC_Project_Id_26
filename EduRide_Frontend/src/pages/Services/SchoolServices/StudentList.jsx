@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../../services/api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 function StudentList() {
   const [students, setStudents] = useState([]);
@@ -19,9 +22,7 @@ function StudentList() {
       setStudents(res.data);
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.data?.message || "Failed to load students"
-      );
+      setError(err.response?.data?.message || "Failed to load students");
     } finally {
       setLoading(false);
     }
@@ -37,16 +38,67 @@ function StudentList() {
 
     try {
       await API.delete(`/students/${studentId}`);
-      setStudents((prev) =>
-        prev.filter((s) => s.id !== studentId)
-      );
+      setStudents((prev) => prev.filter((s) => s.id !== studentId));
     } catch (err) {
-      console.error(err);
-      alert(
-        err.response?.data?.message ||
-          "Failed to delete student"
-      );
+      alert(err.response?.data?.message || "Failed to delete student");
     }
+  };
+
+  // 🖨️ PDF DOWNLOAD
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Student List Report", 14, 20);
+
+    const columns = [
+      "Name",
+      "Email",
+      "Roll No",
+      "Class",
+      "Phone",
+      "Bus",
+      "Pass Status",
+    ];
+
+    const rows = students.map((s) => [
+      s.name,
+      s.email,
+      s.rollNo || "-",
+      s.className || "-",
+      s.phone || "-",
+      s.assignedBusNumber || "Not Assigned",
+      s.passStatus,
+    ]);
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 30,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [22, 160, 133] },
+    });
+
+    doc.save("students_list.pdf");
+  };
+
+  // 📊 EXCEL DOWNLOAD
+  const handleDownloadExcel = () => {
+    const excelData = students.map((s) => ({
+      Name: s.name,
+      Email: s.email,
+      "Roll No": s.rollNo || "-",
+      Class: s.className || "-",
+      Phone: s.phone || "-",
+      Bus: s.assignedBusNumber || "Not Assigned",
+      "Pass Status": s.passStatus,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    XLSX.writeFile(workbook, "students_list.xlsx");
   };
 
   if (loading) {
@@ -67,14 +119,31 @@ function StudentList() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <h1 className="text-3xl font-bold text-center mb-10">
+      <h1 className="text-3xl font-bold text-center mb-6">
         Students of Your School
       </h1>
 
+      {/* 📤 Export Buttons */}
+      {students.length > 0 && (
+        <div className="flex justify-end gap-4 mb-6">
+          <button
+            onClick={handleDownloadPDF}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+          >
+            Download PDF
+          </button>
+
+          <button
+            onClick={handleDownloadExcel}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+          >
+            Download Excel
+          </button>
+        </div>
+      )}
+
       {students.length === 0 ? (
-        <p className="text-center text-gray-600">
-          No students found.
-        </p>
+        <p className="text-center text-gray-600">No students found.</p>
       ) : (
         <div className="overflow-x-auto bg-white shadow-lg rounded-xl">
           <table className="min-w-full divide-y divide-gray-200">
@@ -96,18 +165,11 @@ function StudentList() {
                 <tr key={student.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">{student.name}</td>
                   <td className="px-6 py-4">{student.email}</td>
+                  <td className="px-6 py-4">{student.rollNo || "-"}</td>
+                  <td className="px-6 py-4">{student.className || "-"}</td>
+                  <td className="px-6 py-4">{student.phone || "-"}</td>
                   <td className="px-6 py-4">
-                    {student.rollNo || "-"}
-                  </td>
-                  <td className="px-6 py-4">
-                    {student.className || "-"}
-                  </td>
-                  <td className="px-6 py-4">
-                    {student.phone || "-"}
-                  </td>
-                  <td className="px-6 py-4">
-                    {student.assignedBusNumber ||
-                      "Not Assigned"}
+                    {student.assignedBusNumber || "Not Assigned"}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -121,24 +183,20 @@ function StudentList() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center space-x-3">
-                    {/* ✏️ EDIT */}
                     <button
                       onClick={() =>
                         navigate(
                           `/school/services/students/edit/${student.id}`
                         )
                       }
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition"
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg"
                     >
                       Edit
                     </button>
 
-                    {/* 🗑️ DELETE */}
                     <button
-                      onClick={() =>
-                        handleDelete(student.id)
-                      }
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+                      onClick={() => handleDelete(student.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
                     >
                       Delete
                     </button>

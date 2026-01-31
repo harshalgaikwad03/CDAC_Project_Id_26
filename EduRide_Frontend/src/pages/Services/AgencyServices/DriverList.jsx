@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../../services/api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 function DriverList() {
   const [drivers, setDrivers] = useState([]);
@@ -26,7 +29,7 @@ function DriverList() {
   };
 
   // ─────────────────────────────────────────────
-  // Unassign driver from bus (kept as-is)
+  // Unassign driver from bus
   // ─────────────────────────────────────────────
   const unassignDriver = async (busId) => {
     try {
@@ -39,46 +42,36 @@ function DriverList() {
   };
 
   // ─────────────────────────────────────────────
-  // Delete driver with AUTO-UNASSIGN FLOW
+  // Delete driver (auto-unassign flow)
   // ─────────────────────────────────────────────
   const handleDelete = async (driver) => {
-
-    // 🔴 CASE 1: Driver assigned to bus → auto unassign flow
     if (driver.busId) {
       const confirmUnassign = window.confirm(
         "This driver is assigned to a bus.\n\nDo you want to unassign the bus and delete the driver?"
       );
-
       if (!confirmUnassign) return;
 
       try {
-        // 1️⃣ Unassign driver
         await API.put(`/buses/${driver.busId}/unassign-driver`);
 
-        // 2️⃣ Confirm delete
         const confirmDelete = window.confirm(
           "Driver unassigned successfully.\n\nDo you want to delete the driver now?"
         );
-
         if (!confirmDelete) {
           loadDrivers();
           return;
         }
 
-        // 3️⃣ Delete driver
         await API.delete(`/drivers/${driver.id}`);
         alert("Driver deleted successfully");
-
         loadDrivers();
         return;
-
       } catch (err) {
         alert(err.response?.data?.message || "Operation failed");
         return;
       }
     }
 
-    // 🟢 CASE 2: Driver NOT assigned → normal delete
     if (!window.confirm("Delete this driver?")) return;
 
     try {
@@ -88,6 +81,58 @@ function DriverList() {
     } catch (err) {
       alert(err.response?.data?.message || "Delete failed");
     }
+  };
+
+  // 🖨️ PDF DOWNLOAD
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Agency Driver List Report", 14, 20);
+
+    const columns = [
+      "Name",
+      "Phone",
+      "License No",
+      "Bus Number",
+      "School",
+    ];
+
+    const rows = drivers.map((d) => [
+      d.name,
+      d.phone,
+      d.licenseNumber,
+      d.busNumber || "Not Assigned",
+      d.schoolName || "Not Assigned",
+    ]);
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save("agency_driver_list.pdf");
+  };
+
+  // 📊 EXCEL DOWNLOAD
+  const handleDownloadExcel = () => {
+    const excelData = drivers.map((d) => ({
+      Name: d.name,
+      Phone: d.phone,
+      "License No": d.licenseNumber,
+      "Bus Number": d.busNumber || "Not Assigned",
+      School: d.schoolName || "Not Assigned",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Drivers");
+
+    XLSX.writeFile(workbook, "agency_driver_list.xlsx");
   };
 
   // ─────────────────────────────────────────────
@@ -100,8 +145,26 @@ function DriverList() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       {/* HEADER */}
-      <div className="mb-8">
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-3xl font-bold">Drivers</h1>
+
+        {/* 📤 Export Buttons */}
+        {drivers.length > 0 && (
+          <div className="flex gap-3">
+            <button
+              onClick={handleDownloadPDF}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+            >
+              Download PDF
+            </button>
+            <button
+              onClick={handleDownloadExcel}
+              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg"
+            >
+              Download Excel
+            </button>
+          </div>
+        )}
       </div>
 
       {drivers.length === 0 ? (
@@ -125,7 +188,6 @@ function DriverList() {
                 🏫 School: {d.schoolName || "Not Assigned"}
               </p>
 
-              {/* ACTION BUTTONS */}
               <div className="flex flex-col gap-3 mt-6">
                 <button
                   onClick={() =>

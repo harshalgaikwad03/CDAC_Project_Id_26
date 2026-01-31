@@ -261,7 +261,7 @@ function StudentDashboard() {
           <h3 className="text-xl font-semibold mb-6">Quick Actions</h3>
           <div className="space-y-4">
             <button
-              onClick={() => navigate("/student/feedback")}
+              onClick={() => navigate("/feedback")}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg"
             >
               Feedback

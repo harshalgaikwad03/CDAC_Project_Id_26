@@ -130,6 +130,7 @@ public class BusHelperService {
             BusHelperResponseDTO dto = new BusHelperResponseDTO();
             dto.setId(helper.getId());
             dto.setName(helper.getName());
+            dto.setEmail(helper.getEmail()); // ✅ FIX
             dto.setPhone(helper.getPhone());
             dto.setBusNumber(
                 helper.getAssignedBus() != null
@@ -139,6 +140,7 @@ public class BusHelperService {
             return dto;
         }).toList();
     }
+
 
 
     public List<BusHelper> findByBus(Long busId) {
