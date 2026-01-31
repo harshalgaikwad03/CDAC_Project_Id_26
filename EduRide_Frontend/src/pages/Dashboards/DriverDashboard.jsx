@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../../services/api";
+import { useNavigate } from "react-router-dom";
+
 
 const ROUTES = {
   HOME_TO_SCHOOL: "HOME_TO_SCHOOL",
@@ -11,6 +13,7 @@ function DriverDashboard() {
   const [route, setRoute] = useState(ROUTES.HOME_TO_SCHOOL);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSummary();
@@ -99,22 +102,20 @@ function DriverDashboard() {
       <div className="flex justify-center gap-4 mb-10">
         <button
           onClick={() => setRoute(ROUTES.HOME_TO_SCHOOL)}
-          className={`px-6 py-2 rounded-lg font-medium transition ${
-            route === ROUTES.HOME_TO_SCHOOL
+          className={`px-6 py-2 rounded-lg font-medium transition ${route === ROUTES.HOME_TO_SCHOOL
               ? "bg-blue-600 text-white"
               : "bg-gray-200 hover:bg-gray-300"
-          }`}
+            }`}
         >
           Home → School
         </button>
 
         <button
           onClick={() => setRoute(ROUTES.SCHOOL_TO_HOME)}
-          className={`px-6 py-2 rounded-lg font-medium transition ${
-            route === ROUTES.SCHOOL_TO_HOME
+          className={`px-6 py-2 rounded-lg font-medium transition ${route === ROUTES.SCHOOL_TO_HOME
               ? "bg-blue-600 text-white"
               : "bg-gray-200 hover:bg-gray-300"
-          }`}
+            }`}
         >
           School → Home
         </button>
@@ -140,6 +141,16 @@ function DriverDashboard() {
           color="text-red-600"
         />
       </div>
+
+      {/* Feedback Button */}
+      <button
+  onClick={() => navigate("/feedback")}
+  className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition"
+>
+  Give Feedback
+</button>
+
+
     </div>
   );
 }

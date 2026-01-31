@@ -185,6 +185,13 @@ public class SecurityConfig {
 //                .hasAnyRole("AGENCY", "SCHOOL", "STUDENT", "HELPER")
                 .requestMatchers("/api/student-status/**")
                 .authenticated()
+                
+             // 1️⃣4️⃣ FEEDBACK (STUDENT ONLY)
+                .requestMatchers(HttpMethod.POST, "/api/feedback")
+                .hasAnyRole("STUDENT", "DRIVER", "HELPER", "SCHOOL", "AGENCY")
+
+
+
 
                 // 1️⃣3️⃣ EVERYTHING ELSE
                 .anyRequest().authenticated()
