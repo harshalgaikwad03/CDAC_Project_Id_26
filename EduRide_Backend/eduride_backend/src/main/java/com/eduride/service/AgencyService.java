@@ -9,6 +9,8 @@ import com.eduride.repository.BusRepository;
 import com.eduride.repository.DriverRepository;
 import com.eduride.repository.SchoolRepository;
 import com.eduride.repository.StudentRepository;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -84,10 +86,21 @@ public class AgencyService {
     // NEW: Agency-wide dashboard summary
     // ────────────────────────────────────────────────
     public AgencyDashboardSummaryDTO getAgencyDashboardSummary() {
-        long totalBuses   = busRepository.count();
-        long totalDrivers = driverRepository.count();
-        long totalStudents = studentRepository.count();
-        long totalSchools = schoolRepository.count();
+
+        // 🔐 Get logged-in agency email
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        Agency agency = repo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Agency not found"));
+
+        Long agencyId = agency.getId();
+
+        long totalBuses = busRepository.countByAgencyId(agencyId);
+        long totalDrivers = driverRepository.countByAgencyId(agencyId);
+        long totalStudents = studentRepository.countByAgencyId(agencyId);
+        long totalSchools = schoolRepository.countByAgencyId(agencyId);
 
         return new AgencyDashboardSummaryDTO(
                 totalBuses,

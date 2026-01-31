@@ -26,10 +26,11 @@ function DriverDashboard() {
     } catch (err) {
       console.error("Driver dashboard error:", err);
 
-      if (err.response?.status === 409) {
-        setError("No bus assigned yet. Please contact your agency.");
-      } else if (err.response?.status === 403) {
-        setError("You are not authorized to view this dashboard.");
+      const status = err.response?.status;
+
+      // ✅ Treat 403 & 409 as "no dashboard data"
+      if (status === 403 || status === 409) {
+        setSummary(null);
       } else {
         setError("Failed to load driver dashboard.");
       }
@@ -47,7 +48,7 @@ function DriverDashboard() {
     );
   }
 
-  /* ---------------- ERROR ---------------- */
+  /* ---------------- REAL ERROR ---------------- */
   if (error) {
     return (
       <div className="text-center py-20 text-red-600 text-lg font-semibold">
@@ -56,11 +57,14 @@ function DriverDashboard() {
     );
   }
 
-  /* ---------------- SAFE GUARD ---------------- */
+  /* ---------------- NO DATA (403 / 409) ---------------- */
   if (!summary) {
     return (
       <div className="text-center py-20 text-gray-600">
-        No dashboard data available.
+        <p className="text-lg font-medium">No dashboard data available.</p>
+        <p className="text-sm mt-2">
+          Bus may not be assigned yet. Please contact your agency.
+        </p>
       </div>
     );
   }
