@@ -14,23 +14,17 @@ function StudentSignup() {
     password: "",
     phone: "",
     address: "",
-    schoolId: "",
-    busId: ""
+    schoolId: ""
   });
 
   const [schools, setSchools] = useState([]);
-  const [buses, setBuses] = useState([]);
   const [error, setError] = useState("");
 
-  // ───────── LOAD SCHOOLS & BUSES ─────────
+  // ───────── LOAD SCHOOLS ─────────
   useEffect(() => {
     API.get("/schools")
       .then(res => setSchools(res.data))
       .catch(err => console.error("School load error:", err));
-
-    API.get("/buses")
-      .then(res => setBuses(res.data))
-      .catch(err => console.error("Bus load error:", err));
   }, []);
 
   // ───────── HANDLE INPUT ─────────
@@ -39,10 +33,7 @@ function StudentSignup() {
 
     setForm(prev => ({
       ...prev,
-      [name]:
-        name === "schoolId" || name === "busId"
-          ? value === "" ? "" : Number(value)
-          : value
+      [name]: name === "schoolId" ? Number(value) : value
     }));
   };
 
@@ -64,7 +55,7 @@ function StudentSignup() {
       return;
     }
 
-    // ✅ EXACTLY MATCHES StudentSignupDTO
+    // ✅ EXACTLY MATCHES StudentSignupDTO (busId removed)
     const payload = {
       name: form.name,
       email: form.email,
@@ -73,8 +64,7 @@ function StudentSignup() {
       rollNo: form.rollNo,
       className: form.className,
       address: form.address,
-      schoolId: form.schoolId,
-      busId: form.busId || null
+      schoolId: form.schoolId
     };
 
     try {
@@ -192,23 +182,6 @@ function StudentSignup() {
               {schools.map(s => (
                 <option key={s.id} value={s.id}>
                   {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className={labelClass}>Assign Bus (Optional)</label>
-            <select
-              name="busId"
-              className={inputClass}
-              value={form.busId}
-              onChange={handleChange}
-            >
-              <option value="">-- Select Bus --</option>
-              {buses.map(b => (
-                <option key={b.id} value={b.id}>
-                  {b.busNumber}
                 </option>
               ))}
             </select>

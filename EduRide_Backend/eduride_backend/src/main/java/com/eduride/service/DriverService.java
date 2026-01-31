@@ -69,17 +69,24 @@ public class DriverService {
 
     public Driver update(Long id, Driver updated) {
         Driver existing = findById(id);
+
         existing.setName(updated.getName());
         existing.setPhone(updated.getPhone());
         existing.setEmail(updated.getEmail());
         existing.setLicenseNumber(updated.getLicenseNumber());
-        existing.setAgency(updated.getAgency());
+
+        // ✅ Preserve existing agency
+        if (updated.getAgency() != null) {
+            existing.setAgency(updated.getAgency());
+        }
 
         if (updated.getPassword() != null && !updated.getPassword().isBlank()) {
             existing.setPassword(passwordEncoder.encode(updated.getPassword()));
         }
+
         return repo.save(existing);
     }
+
 
     public void delete(Long id) {
 

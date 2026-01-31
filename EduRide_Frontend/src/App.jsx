@@ -48,6 +48,10 @@ import SchoolBusDetails from "./pages/Services/SchoolServices/SchoolBusDetails";
 //BusHelperService
 import HelperMarkStatus from "./pages/Services/BusHelperServices/HelperMarkStatus";
 
+//FeedBack
+import Feedback from "./pages/Feedback/Feedback";
+
+
 function App() {
   return (
     <>
@@ -100,6 +104,9 @@ function App() {
 
           {/* ─── Bus Helper Protected Routes ─── */}
           <Route path="/helper/mark-status" element={<HelperMarkStatus />} />
+
+          {/*Student FeedBack*/}
+          <Route path="/feedback" element={<Feedback />}/>
 
         </Routes>
       </div>

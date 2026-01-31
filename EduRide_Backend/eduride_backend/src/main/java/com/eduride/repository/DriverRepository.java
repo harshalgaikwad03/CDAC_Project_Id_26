@@ -21,4 +21,6 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
           )
     """)
     List<Driver> findUnassignedDriversByAgency(Long agencyId);
+
+	long countByAgencyId(Long agencyId);
 }

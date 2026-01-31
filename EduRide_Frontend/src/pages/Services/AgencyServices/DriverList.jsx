@@ -99,15 +99,9 @@ function DriverList() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex justify-between mb-8">
+      {/* HEADER */}
+      <div className="mb-8">
         <h1 className="text-3xl font-bold">Drivers</h1>
-
-        <button
-          onClick={() => navigate("/agency/services/add-driver")}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg"
-        >
-          + Add Driver
-        </button>
       </div>
 
       {drivers.length === 0 ? (
@@ -142,7 +136,6 @@ function DriverList() {
                   Edit
                 </button>
 
-                {/* MANUAL UNASSIGN (UNCHANGED) */}
                 {d.busId && (
                   <button
                     onClick={() => unassignDriver(d.busId)}
@@ -152,7 +145,6 @@ function DriverList() {
                   </button>
                 )}
 
-                {/* DELETE */}
                 <button
                   onClick={() => handleDelete(d)}
                   className="bg-red-600 text-white py-2 rounded-lg"

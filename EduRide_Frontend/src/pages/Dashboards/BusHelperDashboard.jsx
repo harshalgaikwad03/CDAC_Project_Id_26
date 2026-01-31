@@ -108,6 +108,16 @@ function BusHelperDashboard() {
           Mark Student Status
         </button>
       </div>
+
+      {/* Feedback Button */}
+      <button
+  onClick={() => navigate("/feedback")}
+  className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition"
+>
+  Give Feedback
+</button>
+
+
     </div>
   );
 }

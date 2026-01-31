@@ -13,5 +13,7 @@ public interface SchoolRepository extends JpaRepository<School, Long> {
     List<School> findByAgencyId(Long agencyId);
 
     Optional<School> findByEmail(String email);
+
+	long countByAgencyId(Long agencyId);
     
 }

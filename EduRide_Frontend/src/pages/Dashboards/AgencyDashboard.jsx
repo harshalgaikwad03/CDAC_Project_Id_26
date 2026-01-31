@@ -1,11 +1,14 @@
 // src/pages/Dashboards/AgencyDashboard.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import API from "../../services/api"; // your axios instance
 
 function AgencyDashboard() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -73,6 +76,16 @@ function AgencyDashboard() {
           Manage Services & Fleet →
         </a>
       </div>
+
+      {/* Feedback Button */}
+      <button
+  onClick={() => navigate("/feedback")}
+  className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition"
+>
+  Give Feedback
+</button>
+
+
     </div>
   );
 }

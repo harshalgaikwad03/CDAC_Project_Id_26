@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../../services/api";
+import { useNavigate } from "react-router-dom";
+
 
 const ROUTES = {
   HOME_TO_SCHOOL: "HOME_TO_SCHOOL",
@@ -11,6 +13,7 @@ function DriverDashboard() {
   const [route, setRoute] = useState(ROUTES.HOME_TO_SCHOOL);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSummary();
@@ -26,10 +29,11 @@ function DriverDashboard() {
     } catch (err) {
       console.error("Driver dashboard error:", err);
 
-      if (err.response?.status === 409) {
-        setError("No bus assigned yet. Please contact your agency.");
-      } else if (err.response?.status === 403) {
-        setError("You are not authorized to view this dashboard.");
+      const status = err.response?.status;
+
+      // ✅ Treat 403 & 409 as "no dashboard data"
+      if (status === 403 || status === 409) {
+        setSummary(null);
       } else {
         setError("Failed to load driver dashboard.");
       }
@@ -47,7 +51,7 @@ function DriverDashboard() {
     );
   }
 
-  /* ---------------- ERROR ---------------- */
+  /* ---------------- REAL ERROR ---------------- */
   if (error) {
     return (
       <div className="text-center py-20 text-red-600 text-lg font-semibold">
@@ -56,11 +60,14 @@ function DriverDashboard() {
     );
   }
 
-  /* ---------------- SAFE GUARD ---------------- */
+  /* ---------------- NO DATA (403 / 409) ---------------- */
   if (!summary) {
     return (
       <div className="text-center py-20 text-gray-600">
-        No dashboard data available.
+        <p className="text-lg font-medium">No dashboard data available.</p>
+        <p className="text-sm mt-2">
+          Bus may not be assigned yet. Please contact your agency.
+        </p>
       </div>
     );
   }
@@ -95,22 +102,20 @@ function DriverDashboard() {
       <div className="flex justify-center gap-4 mb-10">
         <button
           onClick={() => setRoute(ROUTES.HOME_TO_SCHOOL)}
-          className={`px-6 py-2 rounded-lg font-medium transition ${
-            route === ROUTES.HOME_TO_SCHOOL
+          className={`px-6 py-2 rounded-lg font-medium transition ${route === ROUTES.HOME_TO_SCHOOL
               ? "bg-blue-600 text-white"
               : "bg-gray-200 hover:bg-gray-300"
-          }`}
+            }`}
         >
           Home → School
         </button>
 
         <button
           onClick={() => setRoute(ROUTES.SCHOOL_TO_HOME)}
-          className={`px-6 py-2 rounded-lg font-medium transition ${
-            route === ROUTES.SCHOOL_TO_HOME
+          className={`px-6 py-2 rounded-lg font-medium transition ${route === ROUTES.SCHOOL_TO_HOME
               ? "bg-blue-600 text-white"
               : "bg-gray-200 hover:bg-gray-300"
-          }`}
+            }`}
         >
           School → Home
         </button>
@@ -136,6 +141,16 @@ function DriverDashboard() {
           color="text-red-600"
         />
       </div>
+
+      {/* Feedback Button */}
+      <button
+  onClick={() => navigate("/feedback")}
+  className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition"
+>
+  Give Feedback
+</button>
+
+
     </div>
   );
 }

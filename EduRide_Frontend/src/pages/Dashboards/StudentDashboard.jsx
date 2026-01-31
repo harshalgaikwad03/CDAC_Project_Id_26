@@ -10,7 +10,6 @@ function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Payment states
   const [paying, setPaying] = useState(false);
   const [paymentMsg, setPaymentMsg] = useState(null);
 
@@ -22,12 +21,10 @@ function StudentDashboard() {
         setLoading(true);
         setError(null);
 
-        // 1️⃣ Fetch student profile (DTO)
         const studentRes = await API.get("/students/me");
         const studentData = studentRes.data;
         setStudent(studentData);
 
-        // 2️⃣ Fetch today's status
         if (studentData?.id) {
           const statusRes = await API.get(
             `/student-status/today/${studentData.id}`
@@ -52,7 +49,6 @@ function StudentDashboard() {
     fetchData();
   }, []);
 
-  // ✅ Razorpay payment
   const handlePayFee = async () => {
     if (!student?.id) return;
 
@@ -70,7 +66,6 @@ function StudentDashboard() {
       handler: async function (response) {
         setPaymentMsg("Processing Transaction...");
         try {
-          // Save payment
           await axios.post(
             "http://localhost:9090/api/payment/pay",
             null,
@@ -85,15 +80,13 @@ function StudentDashboard() {
             }
           );
 
-          // Activate pass
           await API.put(`/students/${student.id}/activate-pass`);
 
           setPaymentMsg(
             "Payment Successful! Ref: " +
-              response.razorpay_payment_id
+            response.razorpay_payment_id
           );
 
-          // Update UI
           setStudent((prev) => ({
             ...prev,
             passStatus: "ACTIVE"
@@ -182,8 +175,7 @@ function StudentDashboard() {
               ⚠️ Bus Pass Inactive
             </h3>
             <p className="text-red-600 mt-1">
-              Please pay the renewal fee to activate your bus
-              pass.
+              Please pay the renewal fee to activate your bus pass.
             </p>
             {paymentMsg && (
               <p className="font-bold mt-2 text-blue-700">
@@ -215,21 +207,16 @@ function StudentDashboard() {
         {todayStatus ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-xl shadow">
-              <h3 className="text-lg font-medium">
-                Pickup Status
-              </h3>
+              <h3 className="text-lg font-medium">Pickup Status</h3>
               <p className="text-3xl font-bold mt-3 text-green-600">
                 {todayStatus.pickupStatus || "Pending"}
               </p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow">
-              <h3 className="text-lg font-medium">
-                Updated By
-              </h3>
+              <h3 className="text-lg font-medium">Updated By</h3>
               <p className="text-2xl font-semibold mt-3">
-                {todayStatus.updatedByName ||
-                  "Driver / Helper"}
+                {todayStatus.updatedByName || "Driver / Helper"}
               </p>
             </div>
 
@@ -251,19 +238,10 @@ function StudentDashboard() {
       {/* Details + Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h3 className="text-xl font-semibold mb-6">
-            Your Details
-          </h3>
+          <h3 className="text-xl font-semibold mb-6">Your Details</h3>
           <div className="space-y-4">
-            <p>
-              <b>School:</b>{" "}
-              {student?.schoolName || "N/A"}
-            </p>
-            <p>
-              <b>Bus:</b>{" "}
-              {student?.assignedBusNumber ||
-                "Not Assigned"}
-            </p>
+            <p><b>School:</b> {student?.schoolName || "N/A"}</p>
+            <p><b>Bus:</b> {student?.assignedBusNumber || "Not Assigned"}</p>
             <p>
               <b>Pass Status:</b>{" "}
               <span
@@ -280,15 +258,13 @@ function StudentDashboard() {
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h3 className="text-xl font-semibold mb-6">
-            Quick Actions
-          </h3>
+          <h3 className="text-xl font-semibold mb-6">Quick Actions</h3>
           <div className="space-y-4">
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg">
-              Update Profile
-            </button>
-            <button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg">
-              Report Issue
+            <button
+              onClick={() => navigate("/student/feedback")}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg"
+            >
+              Feedback
             </button>
           </div>
         </div>

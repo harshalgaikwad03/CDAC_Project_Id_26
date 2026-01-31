@@ -30,5 +30,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 	boolean existsByEmail(@Email @NotBlank String email);
 	
 	
-	
+	@Query("""
+		    SELECT COUNT(s)
+		    FROM Student s
+		    WHERE s.school.agency.id = :agencyId
+		""")
+		long countByAgencyId(Long agencyId);
+
 }

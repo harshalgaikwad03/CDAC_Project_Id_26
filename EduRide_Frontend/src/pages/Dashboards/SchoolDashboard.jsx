@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import API from "../../services/api";
+import { useNavigate } from "react-router-dom";
+
 
 function SchoolDashboard() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -72,6 +75,16 @@ function SchoolDashboard() {
           View Students & Bus Assignments →
         </a>
       </div>
+
+      {/* Feedback Button */}
+      <button
+  onClick={() => navigate("/feedback")}
+  className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition"
+>
+  Give Feedback
+</button>
+
+
     </div>
   );
 }
