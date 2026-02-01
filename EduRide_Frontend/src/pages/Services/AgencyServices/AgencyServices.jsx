@@ -67,6 +67,25 @@ function AgencyServices() {
         </div>
       </div>
 
+      {/* School Management Block */}
+<div className="bg-gradient-to-br from-orange-50 to-yellow-50 p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-orange-100 mt-10">
+  <div className="text-center">
+    <h3 className="text-2xl font-semibold mb-6 text-orange-800">
+      Manage Schools
+    </h3>
+    <p className="text-gray-700 mb-8 leading-relaxed">
+      View all schools under your agency along with student count and assigned buses.
+    </p>
+    <button
+      onClick={() => navigate("/agency/services/schools")}
+      className="bg-orange-600 hover:bg-orange-700 text-white text-lg font-medium py-4 px-10 rounded-xl shadow-md transition transform hover:-translate-y-1"
+    >
+      View Schools
+    </button>
+  </div>
+</div>
+
+
     </div>
   );
 }

@@ -101,6 +101,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/schools/**").hasRole("SCHOOL")
 
                 // 8️⃣ AGENCY
+                .requestMatchers(HttpMethod.GET, "/api/agencies/schools")
+                .hasRole("AGENCY")
+                .requestMatchers(HttpMethod.PUT, "/api/agencies/schools/*/release")
+                .hasRole("AGENCY")
                 .requestMatchers("/api/agencies/**").hasRole("AGENCY")
 
                 // ─────────────────────────────────────────────

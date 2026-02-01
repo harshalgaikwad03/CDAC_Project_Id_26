@@ -1,19 +1,31 @@
 package com.eduride.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.eduride.dto.SchoolProfileDTO;
 import com.eduride.dto.dashboard.SchoolDashboardSummaryDTO;
 import com.eduride.entity.Agency;
 import com.eduride.entity.School;
 import com.eduride.service.AgencyService;
 import com.eduride.service.SchoolService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/schools")
@@ -32,14 +44,54 @@ public class SchoolController {
      * Public signup endpoint - anyone can register a school
      */
     
+//    @GetMapping("/me")
+//    @PreAuthorize("hasRole('SCHOOL')")
+//    public School getMyProfile() {
+//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+//        return service.findByEmail(email)
+//        		.orElseThrow(() -> new ResponseStatusException(
+//                        HttpStatus.NOT_FOUND,
+//                        "Student profile not found for email: " + email));
+//    }
+
+    
     @GetMapping("/me")
     @PreAuthorize("hasRole('SCHOOL')")
-    public School getMyProfile() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return service.findByEmail(email)
-        		.orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Student profile not found for email: " + email));
+    public SchoolProfileDTO getMyProfile() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        School school = service.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "School profile not found"));
+
+        if (school.getAgency() != null) {
+            return new SchoolProfileDTO(
+                    school.getId(),
+                    school.getName(),
+                    school.getPhone(),
+                    school.getEmail(),
+                    school.getAddress(),
+                    new SchoolProfileDTO.AgencyDTO(
+                            school.getAgency().getId(),
+                            school.getAgency().getName()
+                    )
+            );
+        }
+
+        return new SchoolProfileDTO(
+                school.getId(),
+                school.getName(),
+                school.getPhone(),
+                school.getEmail(),
+                school.getAddress(),
+                null
+        );
     }
 
 
@@ -78,6 +130,7 @@ public class SchoolController {
     public School update(@PathVariable Long id, @Valid @RequestBody School school) {
         return service.update(id, school);
     }
+
 
     /**
      * Delete school - only AGENCY

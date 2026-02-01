@@ -91,6 +91,23 @@ function SchoolServices() {
             Manage Buses
           </button>
         </div>
+
+
+        {/* 6. Edit School Profile */}
+        <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow">
+          <h3 className="text-2xl font-semibold text-orange-700 mb-4 text-center">
+            Edit School Profile
+          </h3>
+          <p className="text-gray-600 mb-6 text-center">
+            Update your school information
+          </p>
+          <button
+            onClick={() => navigate('/school/services/edit')}
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-6 rounded-lg transition"
+          >
+            Edit School
+          </button>
+        </div>
       </div>
     </div>
   );

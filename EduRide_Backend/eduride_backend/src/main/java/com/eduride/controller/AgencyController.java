@@ -1,16 +1,26 @@
 package com.eduride.controller;
 
-import com.eduride.dto.dashboard.AgencyDashboardSummaryDTO;
-import com.eduride.entity.Agency;
-import com.eduride.service.AgencyService;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import com.eduride.dto.SchoolSummaryDTO;
+import com.eduride.dto.dashboard.AgencyDashboardSummaryDTO;
+import com.eduride.entity.Agency;
+import com.eduride.service.AgencyService;
+import com.eduride.service.SchoolService;
 
 @RestController
 @RequestMapping("/api/agencies")
@@ -18,9 +28,11 @@ import java.util.List;
 public class AgencyController {
 
     private final AgencyService service;
+    private final SchoolService schoolService;
 
-    public AgencyController(AgencyService service) {
+    public AgencyController(AgencyService service, SchoolService schoolService) {
         this.service = service;
+		this.schoolService = schoolService;
     }
     
     
@@ -71,4 +83,41 @@ public class AgencyController {
     public AgencyDashboardSummaryDTO getAgencyDashboardSummary() {
         return service.getAgencyDashboardSummary();
     }
+    
+    @GetMapping("/schools")
+    @PreAuthorize("hasRole('AGENCY')")
+    public List<SchoolSummaryDTO> getMySchools() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Agency agency = service.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Agency not found for email: " + email));
+
+        return schoolService.getSchoolsForAgency(agency.getId());
+    }
+    
+    @PutMapping("/schools/{schoolId}/release")
+    @PreAuthorize("hasRole('AGENCY')")
+    public void releaseSchool(@PathVariable Long schoolId) {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Agency agency = service.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Agency not found"));
+
+        schoolService.releaseSchoolFromAgency(schoolId, agency.getId());
+    }
+
+
+
 }
