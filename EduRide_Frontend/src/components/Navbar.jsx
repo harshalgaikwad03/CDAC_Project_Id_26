@@ -62,7 +62,7 @@ function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-bold tracking-tight">EduRide</span>
-                <span className="text-xs font-light text-blue-100 opacity-90">School Bus Management</span>
+                <span className="text-xs font-light text-blue-100 opacity-90">Smart School Transportation Portal</span>
               </div>
             </Link>
           </div>
