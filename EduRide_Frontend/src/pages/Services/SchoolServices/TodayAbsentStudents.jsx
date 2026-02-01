@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import API from "../../../services/api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 function TodayAbsentStudents() {
   const [students, setStudents] = useState([]);
@@ -34,18 +37,73 @@ function TodayAbsentStudents() {
         (s) => s.pickupStatus === "PENDING"
       );
 
-      // DTO already contains student info → no mapping needed
       setStudents(absentStudents);
     } catch (err) {
       console.error(err);
       setError(
         err.response?.data?.message ||
-        err.message ||
-        "Failed to load absent students"
+          err.message ||
+          "Failed to load absent students"
       );
     } finally {
       setLoading(false);
     }
+  };
+
+  // 🖨️ PDF DOWNLOAD
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Today's Absent Students Report", 14, 20);
+
+    const columns = [
+      "Name",
+      "Roll No",
+      "Class",
+      "Contact",
+      "Status",
+    ];
+
+    const rows = students.map((s) => [
+      s.name,
+      s.rollNo || "-",
+      s.className || "-",
+      s.phone || "-",
+      "PENDING",
+    ]);
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [243, 156, 18] },
+    });
+
+    doc.save("today_absent_students.pdf");
+  };
+
+  // 📊 EXCEL DOWNLOAD
+  const handleDownloadExcel = () => {
+    const excelData = students.map((s) => ({
+      Name: s.name,
+      "Roll No": s.rollNo || "-",
+      Class: s.className || "-",
+      Contact: s.phone || "-",
+      Status: "PENDING",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Absent Students"
+    );
+
+    XLSX.writeFile(workbook, "today_absent_students.xlsx");
   };
 
   if (loading) {
@@ -66,9 +124,28 @@ function TodayAbsentStudents() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-10">
+      <h1 className="text-3xl font-bold text-center mb-6">
         Today&apos;s Absent Students
       </h1>
+
+      {/* 📤 Export Buttons */}
+      {students.length > 0 && (
+        <div className="flex justify-end gap-4 mb-6">
+          <button
+            onClick={handleDownloadPDF}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+          >
+            Download PDF
+          </button>
+
+          <button
+            onClick={handleDownloadExcel}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+          >
+            Download Excel
+          </button>
+        </div>
+      )}
 
       {students.length === 0 ? (
         <p className="text-center text-gray-600 text-lg">

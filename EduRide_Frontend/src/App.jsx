@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login/Login";
 import About from "./pages/About";
 import HelpMe from "./pages/HelpMe";
+import Contact from "./pages/Contact";
 
 // Signup Pages
 import RoleSelectSignup from "./pages/Signup/RoleSelectSignup";
@@ -33,6 +34,7 @@ import BusDetails from "./pages/Services/AgencyServices/BusDetails";
 import BusEdit from "./pages/Services/AgencyServices/BusEdit";
 import DriverList from "./pages/Services/AgencyServices/DriverList";
 import EditDriver from "./pages/Services/AgencyServices/EditDriver";
+import AgencySchools from "./pages/Services/AgencyServices/AgencySchools";
 
 
 // School Services (all new/updated files)
@@ -44,6 +46,8 @@ import EditBusHelper from "./pages/Services/SchoolServices/EditBusHelper";
 import TodayPresentStudents from "./pages/Services/SchoolServices/TodayPresentStudents";
 import TodayAbsentStudents from "./pages/Services/SchoolServices/TodayAbsentStudents";
 import SchoolBusDetails from "./pages/Services/SchoolServices/SchoolBusDetails";
+import EditSchool from "./pages/Services/SchoolServices/EditSchool";
+
 
 //BusHelperService
 import HelperMarkStatus from "./pages/Services/BusHelperServices/HelperMarkStatus";
@@ -64,6 +68,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/about" element={<About />} />
           <Route path="/help" element={<HelpMe />} />
+          <Route path="/contact" element={<Contact />} />
 
           {/* ─── Signup Routes ─── */}
           <Route path="/signup" element={<RoleSelectSignup />} />
@@ -83,7 +88,7 @@ function App() {
           <Route path="/agency/services/edit-bus/:busId" element={<BusEdit />} />
           <Route path="/agency/services/drivers" element={<DriverList />} />
           <Route path="/agency/services/edit-driver/:driverId" element={<EditDriver />} />
-
+          <Route path="/agency/services/schools" element={<AgencySchools />}/>
 
           {/* ─── School Protected Routes ─── */}
           <Route path="/school/services" element={<SchoolServices />} />
@@ -98,6 +103,8 @@ function App() {
           <Route path="/school/services/today-absent" element={<TodayAbsentStudents />} />
           {/* Bus Management */}
           <Route path="/school/services/buses" element={<SchoolBusDetails />} />
+          <Route path="/school/services/edit" element={<EditSchool />}/>
+          
 
           {/* ─── Catch-all Redirect ─── */}
           <Route path="*" element={<NavigateToDashboardOrLogin />} />

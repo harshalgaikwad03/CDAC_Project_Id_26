@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import API from "../../../services/api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const STATUS_OPTIONS = ["PENDING", "PICKED", "DROPPED"];
 
@@ -15,7 +18,7 @@ function HelperMarkStatus() {
     fetchStudents();
   }, []);
 
-  // ✅ Fetch students WITH today's status from DB
+  // ✅ Fetch students with today’s status
   const fetchStudents = async () => {
     try {
       const res = await API.get("/helpers/students", {
@@ -24,7 +27,6 @@ function HelperMarkStatus() {
 
       setStudents(res.data);
 
-      // ✅ Initialize radio states from DB
       const initialStatus = {};
       res.data.forEach((s) => {
         initialStatus[s.id] = s.pickupStatus || "PENDING";
@@ -39,7 +41,7 @@ function HelperMarkStatus() {
     }
   };
 
-  // ✅ Optimistic update + safe backend call
+  // ✅ Update status
   const updateStatus = async (studentId, pickupStatus) => {
     setStatusMap((prev) => ({
       ...prev,
@@ -53,9 +55,67 @@ function HelperMarkStatus() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (err) {
-      console.error(err);
       alert("Failed to update status. Please retry.");
     }
+  };
+
+  // 🖨️ PDF DOWNLOAD
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Helper Student Status Report", 14, 20);
+
+    const columns = [
+      "Name",
+      "Roll No",
+      "Class",
+      "Contact",
+      "Bus No",
+      "Status",
+    ];
+
+    const rows = students.map((s) => [
+      s.name,
+      s.rollNo || "-",
+      s.className || "-",
+      s.phone || "-",
+      s.busNumber || "N/A",
+      statusMap[s.id] || "PENDING",
+    ]);
+
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 30,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [52, 73, 94] },
+    });
+
+    doc.save("helper_student_status.pdf");
+  };
+
+  // 📊 EXCEL DOWNLOAD
+  const handleDownloadExcel = () => {
+    const excelData = students.map((s) => ({
+      Name: s.name,
+      "Roll No": s.rollNo || "-",
+      Class: s.className || "-",
+      Contact: s.phone || "-",
+      "Bus No": s.busNumber || "N/A",
+      Status: statusMap[s.id] || "PENDING",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Student Status"
+    );
+
+    XLSX.writeFile(workbook, "helper_student_status.xlsx");
   };
 
   // ───────── UI STATES ─────────
@@ -74,9 +134,28 @@ function HelperMarkStatus() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">
+      <h2 className="text-2xl font-bold mb-4 text-center">
         Mark Student Status
       </h2>
+
+      {/* 📤 Export Buttons */}
+      {students.length > 0 && (
+        <div className="flex justify-end gap-4 mb-6">
+          <button
+            onClick={handleDownloadPDF}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+          >
+            Download PDF
+          </button>
+
+          <button
+            onClick={handleDownloadExcel}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+          >
+            Download Excel
+          </button>
+        </div>
+      )}
 
       {students.length === 0 && (
         <p className="text-center text-gray-600">
@@ -85,11 +164,7 @@ function HelperMarkStatus() {
       )}
 
       {students.map((s) => (
-        <div
-          key={s.id}
-          className="bg-white p-4 mb-4 rounded shadow"
-        >
-          {/* ─── Student Details ─── */}
+        <div key={s.id} className="bg-white p-4 mb-4 rounded shadow">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
             <div>
               <p className="text-sm text-gray-500">Name</p>
@@ -117,13 +192,9 @@ function HelperMarkStatus() {
             </div>
           </div>
 
-          {/* ─── Status Radios ─── */}
           <div className="flex gap-6">
             {STATUS_OPTIONS.map((st) => (
-              <label
-                key={st}
-                className="flex items-center gap-2 cursor-pointer"
-              >
+              <label key={st} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name={`status-${s.id}`}
