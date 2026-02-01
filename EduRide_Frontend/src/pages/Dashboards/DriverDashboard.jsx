@@ -15,7 +15,8 @@ import {
   FaRoad,
   FaCheckCircle,
   FaClock,
-  FaChartLine
+  FaChartLine,
+  FaSignOutAlt
 } from "react-icons/fa";
 
 const ROUTES = {
@@ -48,6 +49,11 @@ function DriverDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
   };
 
   /* ---------------- Loading ---------------- */
@@ -99,9 +105,19 @@ function DriverDashboard() {
         <p className="text-gray-600 max-w-md text-center mb-6">
           Your bus may not be assigned yet. Please contact your transportation agency for assistance.
         </p>
-        <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl shadow hover:shadow-lg transition">
-          Contact Agency
-        </button>
+        <div className="flex gap-4">
+          <button 
+            onClick={handleLogout}
+            className="group flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"
+          >
+            <FaSignOutAlt />
+            <span>Logout</span>
+            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+          </button>
+          <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl shadow hover:shadow-lg transition">
+            Contact Agency
+          </button>
+        </div>
       </div>
     );
   }
@@ -153,11 +169,23 @@ function DriverDashboard() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-              <FaRoad className="text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Driver Portal
-              </span>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
+                <FaRoad className="text-blue-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  Driver Portal
+                </span>
+              </div>
+              
+              <button
+                onClick={handleLogout}
+                className="group flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <FaSignOutAlt />
+                <span>Logout</span>
+                <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
 

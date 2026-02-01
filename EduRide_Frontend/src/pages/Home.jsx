@@ -9,7 +9,10 @@ import {
   FaSignInAlt,
   FaUserPlus,
   FaTachometerAlt,
-  FaClipboardCheck
+  FaClipboardCheck,
+  FaMapMarkedAlt,
+  FaUsers,
+  FaChartLine
 } from "react-icons/fa";
 
 function Home() {
@@ -34,6 +37,7 @@ function Home() {
   };
 
   /* ================= LOGGED IN USERS ================= */
+  
   if (role) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -131,16 +135,39 @@ function Home() {
     );
   }
 
+
   /* ================= PUBLIC USERS ================= */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-white relative">
+
+      {/* ===== TOP RIGHT AUTH BUTTONS ===== */}
+      <div className="absolute top-6 right-6 flex gap-4 ">
+        <button
+          onClick={() => navigate("/login")}
+          className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 min-w-[120px] justify-center overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <FaSignInAlt className="relative text-lg group-hover:scale-110 transition-transform duration-300" />
+          <span className="relative">Login</span>
+        </button>
+
+        <button
+          onClick={() => navigate("/signup")}
+          className="group flex items-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 min-w-[120px] justify-center overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <FaUserPlus className="relative text-lg group-hover:scale-110 transition-transform duration-300" />
+          <span className="relative">Create Account</span>
+        </button>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         {/* Hero Section */}
         <div className="text-center mb-20">
           <div className="relative inline-flex mb-12">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
             <div className="relative w-32 h-32 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center shadow-2xl">
-              <FaSchool className="text-white text-6xl transform transition-transform hover:scale-110" />
+              <FaSchool className="text-white text-6xl" />
             </div>
           </div>
 
@@ -195,35 +222,49 @@ function Home() {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center">
-          <div className="flex flex-col sm:flex-row gap-8 justify-center items-center mb-16">
-            <button
-              onClick={() => navigate("/login")}
-              className="group relative flex items-center gap-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-14 py-6 rounded-xl text-lg font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 min-w-[240px] justify-center overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <FaSignInAlt className="relative text-xl group-hover:scale-110 transition-transform duration-300" />
-              <span className="relative">Login</span>
-            </button>
-
-            <button
-              onClick={() => navigate("/signup")}
-              className="group relative flex items-center gap-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-14 py-6 rounded-xl text-lg font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 min-w-[240px] justify-center overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <FaUserPlus className="relative text-xl group-hover:scale-110 transition-transform duration-300" />
-              <span className="relative">Create Account</span>
-            </button>
-          </div>
-
-          <p className="text-gray-500 text-sm font-medium tracking-wide">
-            Built for academic projects and real-world school transport management • Secure • Scalable • User-Friendly
-          </p>
-        </div>
+        
+        <p className="text-center text-gray-500 text-sm font-medium mt-12">
+           real-world school transport management • Secure • Scalable • User-Friendly
+        </p>
       </div>
     </div>
   );
 }
+
+const Feature = ({ icon, title, description, color }) => {
+  const colorClasses = {
+    blue: "border-blue-200 hover:border-blue-300",
+    green: "border-green-200 hover:border-green-300",
+    amber: "border-amber-200 hover:border-amber-300"
+  };
+
+  return (
+    <div className={`group bg-white/95 backdrop-blur-sm rounded-2xl p-10 shadow-xl border ${colorClasses[color]} hover:shadow-2xl hover:-translate-y-2 transition-all duration-500`}>
+      <div className="flex justify-center mb-6">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 group-hover:scale-110 transition-transform duration-500">
+          {icon}
+        </div>
+      </div>
+      <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">{title}</h3>
+      <p className="text-gray-600 text-center leading-relaxed">
+        {description}
+      </p>
+    </div>
+  );
+};
+
+const StatCard = ({ icon, label, value, color }) => (
+  <div className={`bg-gradient-to-br ${color} rounded-2xl p-6 shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300`}>
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-2xl font-bold text-gray-900 mb-1">{value}</div>
+        <div className="text-gray-600 font-medium">{label}</div>
+      </div>
+      <div className="text-3xl">
+        {icon}
+      </div>
+    </div>
+  </div>
+);
 
 export default Home;
