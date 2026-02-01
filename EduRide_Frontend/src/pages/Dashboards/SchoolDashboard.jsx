@@ -1,7 +1,19 @@
+// src/pages/Dashboards/SchoolDashboard.jsx
 import React, { useState, useEffect } from "react";
 import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
-
+import {
+  FaUsers,
+  FaBus,
+  FaClipboardCheck,
+  FaSchool,
+  FaComments,
+  FaArrowRight,
+  FaSpinner,
+  FaExclamationCircle,
+  FaGraduationCap,
+  FaChartLine
+} from "react-icons/fa";
 
 function SchoolDashboard() {
   const [summary, setSummary] = useState(null);
@@ -12,7 +24,6 @@ function SchoolDashboard() {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        // ✅ token is attached automatically by Axios interceptor
         const res = await API.get("/schools/dashboard/summary");
         setSummary(res.data);
       } catch (err) {
@@ -22,69 +33,193 @@ function SchoolDashboard() {
         setLoading(false);
       }
     };
-
     fetchSummary();
   }, []);
 
+  /* ---------------- Loading ---------------- */
   if (loading) {
-    return <div className="text-center py-20">Loading...</div>;
-  }
-
-  if (error) {
     return (
-      <div className="text-center py-20 text-red-600">
-        {error}
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-100 via-white to-blue-50">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mb-6 shadow-lg">
+          <FaSpinner className="text-white text-2xl animate-spin" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-700 mb-1">
+          Loading Dashboard
+        </h3>
+        <p className="text-gray-500">Fetching school data…</p>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-10">
-        {summary?.schoolName || "School"} Dashboard
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-white p-6 rounded-xl shadow-md text-center">
-          <h3 className="text-xl font-semibold">Total Students</h3>
-          <p className="text-5xl font-bold text-purple-600 mt-2">
-            {summary?.totalStudents ?? 0}
-          </p>
+  /* ---------------- Error ---------------- */
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-100 via-white to-pink-50">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg">
+          <FaExclamationCircle className="text-white text-2xl" />
         </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-md text-center">
-          <h3 className="text-xl font-semibold">Assigned Buses</h3>
-          <p className="text-5xl font-bold text-blue-600 mt-2">
-            {summary?.totalBuses ?? 0}
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-md text-center">
-          <h3 className="text-xl font-semibold">Today's Attendance</h3>
-          <p className="text-5xl font-bold text-green-600 mt-2">
-            {summary?.attendancePercentage?.toFixed(1) ?? 0}%
-          </p>
-        </div>
-      </div>
-
-      <div className="text-center">
-        <a
-          href="/school/services"
-          className="inline-block bg-blue-600 text-white px-10 py-4 rounded-lg text-lg font-medium hover:bg-blue-700"
+        <h3 className="text-xl font-semibold text-gray-700 mb-2">
+          Something went wrong
+        </h3>
+        <p className="text-red-500 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium shadow hover:shadow-lg transition"
         >
-          View Students & Bus Assignments →
-        </a>
+          Try Again
+        </button>
       </div>
+    );
+  }
 
-      {/* Feedback Button */}
-      <button
-  onClick={() => navigate("/feedback")}
-  className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition"
->
-  Give Feedback
-</button>
+  const stats = [
+    {
+      title: "Total Students",
+      value: summary?.totalStudents ?? 0,
+      icon: <FaUsers />,
+      color: "from-purple-500 to-pink-500",
+      border: "border-purple-200"
+    },
+    {
+      title: "Assigned Buses",
+      value: summary?.totalBuses ?? 0,
+      icon: <FaBus />,
+      color: "from-blue-500 to-cyan-500",
+      border: "border-blue-200"
+    },
+    {
+      title: "Today's Attendance",
+      value: summary?.attendancePercentage?.toFixed(1) ?? 0,
+      suffix: "%",
+      icon: <FaClipboardCheck />,
+      color: "from-green-500 to-emerald-500",
+      border: "border-green-200"
+    }
+  ];
 
+  return (
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-100/70 via-white to-blue-50/50 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="backdrop-blur-xl bg-white/75 border border-white/60 rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10">
 
+          {/* ---------------- Header ---------------- */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-12">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+                <FaSchool className="text-white text-2xl" />
+              </div>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+                  {summary?.schoolName || "School"} Dashboard
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Smart student transportation overview
+                </p>
+                <span className="inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                  Live Transport Overview
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-xl border border-green-200">
+              <FaChartLine className="text-green-600" />
+              <span className="text-sm font-medium text-gray-700">
+                EduRide School Portal
+              </span>
+            </div>
+          </div>
+
+          {/* ---------------- Stats ---------------- */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+            {stats.map((stat, idx) => (
+              <div
+                key={idx}
+                className={`relative overflow-hidden bg-white/80 backdrop-blur-md p-6 rounded-2xl border ${stat.border}
+                shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
+              >
+                <div
+                  className={`absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-r ${stat.color} opacity-20 rounded-full blur-3xl`}
+                />
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-700">{stat.title}</h3>
+                  <div
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center text-white text-xl`}
+                  >
+                    {stat.icon}
+                  </div>
+                </div>
+
+                <p className="text-5xl font-bold text-gray-900 mb-2">
+                  {stat.value}
+                  {stat.suffix || ""}
+                </p>
+
+                {stat.title === "Today's Attendance" && (
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="flex-1 h-2.5 bg-gray-200/60 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
+                        style={{ width: `${Math.min(100, stat.value)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-gray-500">
+                      {stat.value >= 90
+                        ? "Excellent"
+                        : stat.value >= 70
+                        ? "Good"
+                        : "Needs Attention"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* ---------------- Actions ---------------- */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white/80 backdrop-blur-lg p-8 rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition hover:-translate-y-1">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Students & Transport
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Manage students, bus assignments and helpers.
+              </p>
+              <button
+                onClick={() => navigate("/school/services")}
+                className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-xl transition"
+              >
+                <FaGraduationCap />
+                View Assignments
+                <FaArrowRight />
+              </button>
+            </div>
+
+            <div className="bg-white/80 backdrop-blur-lg p-8 rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition hover:-translate-y-1">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Feedback & Support
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Share feedback or report issues.
+              </p>
+              <button
+                onClick={() => navigate("/feedback")}
+                className="flex items-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-xl transition"
+              >
+                <FaComments />
+                Give Feedback
+                <FaArrowRight />
+              </button>
+            </div>
+          </div>
+
+          {/* ---------------- Footer ---------------- */}
+          <div className="text-center text-xs text-gray-500 mt-14 pt-6 border-t border-gray-200/60">
+            <p>Designed for safe, smart & efficient school transportation</p>
+            <p className="mt-1">© {new Date().getFullYear()} EduRide</p>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }
