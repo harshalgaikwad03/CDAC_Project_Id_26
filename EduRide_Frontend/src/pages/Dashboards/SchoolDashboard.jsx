@@ -12,7 +12,8 @@ import {
   FaSpinner,
   FaExclamationCircle,
   FaGraduationCap,
-  FaChartLine
+  FaChartLine,
+  FaSignOutAlt
 } from "react-icons/fa";
 
 function SchoolDashboard() {
@@ -35,6 +36,11 @@ function SchoolDashboard() {
     };
     fetchSummary();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
 
   /* ---------------- Loading ---------------- */
   if (loading) {
@@ -121,11 +127,23 @@ function SchoolDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-xl border border-green-200">
-              <FaChartLine className="text-green-600" />
-              <span className="text-sm font-medium text-gray-700">
-                EduRide School Portal
-              </span>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-xl border border-green-200">
+                <FaChartLine className="text-green-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  EduRide School Portal
+                </span>
+              </div>
+
+              {/* Logout Button - Same style as StudentDashboard */}
+              <button
+                onClick={handleLogout}
+                className="group flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <FaSignOutAlt />
+                <span>Logout</span>
+                <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
 

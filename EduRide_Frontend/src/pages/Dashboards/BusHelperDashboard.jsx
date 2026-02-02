@@ -15,7 +15,8 @@ import {
   FaSpinner,
   FaArrowRight,
   FaShieldAlt,
-  FaTasks
+  FaTasks,
+  FaSignOutAlt
 } from "react-icons/fa";
 
 const ROUTES = {
@@ -48,6 +49,11 @@ function BusHelperDashboard() {
     };
     fetchSummary();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
 
   /* ---------- LOADING ---------- */
   if (loading) {
@@ -122,19 +128,21 @@ function BusHelperDashboard() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-start lg:items-end gap-3">
-                <button
-                  onClick={() => navigate("/helper/mark-status")}
-                  className="group flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <FaClipboardCheck />
-                  <span>Mark Student Status</span>
-                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-                </button>
-                <div className="flex items-center gap-2 text-sm font-medium text-cyan-700">
-                  <FaExclamationCircle />
-                  <span>Mandatory before trip completion</span>
+              <div className="flex flex-col items-end gap-3">
+                <div className="flex items-center gap-4">
+                  {/* Logout Button - Same style as StudentDashboard */}
+                  <button
+                    onClick={handleLogout}
+                    className="group flex items-center justify-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium shadow-sm hover:shadow-md transition-all duration-300"
+                  >
+                    <FaSignOutAlt />
+                    <span>Logout</span>
+                    <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  
+                  
                 </div>
+                
               </div>
             </div>
 
@@ -155,9 +163,18 @@ function BusHelperDashboard() {
                   </div>
                 </div>
                 <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-2 rounded-lg border border-blue-200">
-                  <p className="text-sm font-medium text-gray-700">
-                    Route: <span className="text-blue-600">{summary.routeName || "N/A"}</span>
-                  </p>
+                 <button
+                    onClick={() => navigate("/helper/mark-status")}
+                    className="group flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    <FaClipboardCheck />
+                    <span>Mark Student Status</span>
+                    <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <div className="flex items-center gap-2 text-sm font-medium text-cyan-700">
+                  <FaExclamationCircle />
+                  <span>Mandatory before trip completion</span>
+                </div>
                 </div>
               </div>
             </div>
