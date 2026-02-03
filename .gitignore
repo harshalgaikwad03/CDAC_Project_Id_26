@@ -30,3 +30,7 @@ dist/
 # Build output (No need to track these)
 bin/
 obj/
+
+# .NET
+bin/
+obj/
