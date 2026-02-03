@@ -12,6 +12,7 @@ public class HelperStudentStatusDTO {
  private String className;
  private String phone;
  private String busNumber;
+ private String email;
 
  private String pickupStatus; // 👈 TODAY’s status
 

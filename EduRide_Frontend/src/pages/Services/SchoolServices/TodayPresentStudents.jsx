@@ -570,14 +570,14 @@ function TodayPresentStudents() {
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
+        {/* <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm mb-2">
             Daily Transport Attendance System • EduRide • Real-time Tracking
           </p>
           <p className="text-xs text-gray-400">
             Report generated on {new Date().toLocaleString()} • Auto-refreshes every 5 minutes
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Add custom styles */}

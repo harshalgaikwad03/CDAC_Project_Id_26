@@ -345,14 +345,14 @@ function EditSchool() {
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="text-center text-gray-500 mt-12 pt-6 border-t border-gray-200">
+        {/* <div className="text-center text-gray-500 mt-12 pt-6 border-t border-gray-200">
           <p className="text-sm">
             School Profile Management • EduRide • All changes are logged for security
           </p>
           <p className="text-xs text-gray-400 mt-2">
             School ID: {school.id} • Last updated: {new Date().toLocaleDateString()}
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Add custom styles */}

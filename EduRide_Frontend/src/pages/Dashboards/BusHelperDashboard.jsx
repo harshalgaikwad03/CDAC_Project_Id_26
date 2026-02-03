@@ -331,13 +331,13 @@ function BusHelperDashboard() {
             </div>
 
             {/* FOOTER */}
-            <div className="text-center text-sm text-gray-500 mt-12 pt-6 border-t border-gray-200">
+            {/* <div className="text-center text-sm text-gray-500 mt-12 pt-6 border-t border-gray-200">
               <p className="flex flex-col sm:flex-row items-center justify-center gap-2">
                 <span>Bus helpers are a key part of student safety and attendance accuracy</span>
                 <span className="hidden sm:inline w-1 h-1 bg-gray-300 rounded-full"></span>
                 <span>© {new Date().getFullYear()} EduRide</span>
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

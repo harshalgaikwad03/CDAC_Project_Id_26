@@ -33,7 +33,7 @@ function Login() {
 
   const handleLogin = async (e) => {
     e?.preventDefault();
-    
+
     // Basic validation
     if (!email.trim() || !password.trim()) {
       setError("Please enter both email and password");
@@ -103,8 +103,8 @@ function Login() {
 
       setError(
         err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Login failed. Please check your credentials and try again."
+        err.response?.data?.error ||
+        "Login failed. Please check your credentials and try again."
       );
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ function Login() {
       helper: { email: "demo@helper.com", password: "demo123" },
       student: { email: "demo@student.com", password: "demo123" }
     };
-    
+
     const creds = demoCredentials[role];
     if (creds) {
       setEmail(creds.email);
@@ -197,7 +197,7 @@ function Login() {
                   </div>
                 )}
 
-                
+
 
                 {/* Form */}
                 <form onSubmit={handleLogin} className="space-y-6">
@@ -213,8 +213,8 @@ function Login() {
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value.trim())}
-                        onFocus={() => setIsFocused({...isFocused, email: true})}
-                        onBlur={() => setIsFocused({...isFocused, email: false})}
+                        onFocus={() => setIsFocused({ ...isFocused, email: true })}
+                        onBlur={() => setIsFocused({ ...isFocused, email: false })}
                         className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
                         required
                       />
@@ -229,13 +229,13 @@ function Login() {
                         <FaLock className="text-blue-600" />
                         Password
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => navigate("/forgot-password")}
-                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      {/* <button
+                        onClick={() => navigate("/change-password")}
+                        className="text-blue-600 hover:underline"
                       >
-                        Forgot password?
-                      </button>
+                        Change Password
+                      </button> */}
+
                     </div>
                     <div className={`relative transition-all duration-200 ${isFocused.password ? 'transform scale-[1.01]' : ''}`}>
                       <input
@@ -243,8 +243,8 @@ function Login() {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        onFocus={() => setIsFocused({...isFocused, password: true})}
-                        onBlur={() => setIsFocused({...isFocused, password: false})}
+                        onFocus={() => setIsFocused({ ...isFocused, password: true })}
+                        onBlur={() => setIsFocused({ ...isFocused, password: false })}
                         className="w-full px-4 py-3 pl-12 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
                         required
                       />
@@ -260,7 +260,7 @@ function Login() {
                   </div>
 
                   {/* Remember Me & Forgot Password */}
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -270,18 +270,17 @@ function Login() {
                       />
                       <span className="text-sm text-gray-700">Remember me</span>
                     </label>
-                  </div>
+                  </div> */}
 
                   {/* Submit Button */}
                   <div className="pt-4">
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`w-full py-4 px-6 rounded-xl font-bold text-white shadow-lg transition-all duration-300 ${
-                        loading
+                      className={`w-full py-4 px-6 rounded-xl font-bold text-white shadow-lg transition-all duration-300 ${loading
                           ? 'bg-blue-400 cursor-not-allowed'
                           : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl transform hover:-translate-y-0.5'
-                      }`}
+                        }`}
                     >
                       {loading ? (
                         <div className="flex items-center justify-center gap-3">
@@ -297,9 +296,9 @@ function Login() {
                     </button>
                   </div>
 
-                  
 
-                  
+
+
                 </form>
 
                 {/* Sign Up Link */}
@@ -321,11 +320,11 @@ function Login() {
             </div>
           </div>
 
-          
+
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="text-center mt-12 pt-8 border-t border-gray-200">
+        {/* <div className="text-center mt-12 pt-8 border-t border-gray-200">
           
           <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-gray-500">
             <span>© {new Date().getFullYear()} EduRide</span>
@@ -336,7 +335,7 @@ function Login() {
             <span>•</span>
             <a href="#" className="hover:text-blue-600 hover:underline">Support</a>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Add custom styles */}

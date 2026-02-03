@@ -304,9 +304,9 @@ function DriverSignup() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-12 text-xs text-gray-400">
+        {/* <div className="text-center mt-12 text-xs text-gray-400">
           © {new Date().getFullYear()} EduRide – Smart School Transportation System
-        </div>
+        </div> */}
       </div>
 
       <style jsx>{`

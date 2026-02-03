@@ -641,7 +641,7 @@ function TodayAbsentStudents() {
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
+        {/* <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm mb-2">
             Daily Transport Attendance Monitoring • EduRide • Parent Follow-up System
           </p>
@@ -651,7 +651,7 @@ function TodayAbsentStudents() {
           <p className="text-xs text-gray-400 mt-1">
             Note: Absent students are marked as PENDING until picked up
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Add custom styles */}

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Eduride_Log")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1246138ed180ce0c060c50a2293688ea957c3aee")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3b2d9ac186b21e28fb09da5c5382937497386cfa")]
 [assembly: System.Reflection.AssemblyProductAttribute("Eduride_Log")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Eduride_Log")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

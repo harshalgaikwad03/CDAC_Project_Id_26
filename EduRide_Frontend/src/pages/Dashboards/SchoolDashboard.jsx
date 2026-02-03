@@ -231,10 +231,10 @@ function SchoolDashboard() {
           </div>
 
           {/* ---------------- Footer ---------------- */}
-          <div className="text-center text-xs text-gray-500 mt-14 pt-6 border-t border-gray-200/60">
+          {/* <div className="text-center text-xs text-gray-500 mt-14 pt-6 border-t border-gray-200/60">
             <p>Designed for safe, smart & efficient school transportation</p>
             <p className="mt-1">© {new Date().getFullYear()} EduRide</p>
-          </div>
+          </div> */}
 
         </div>
       </div>
