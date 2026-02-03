@@ -299,14 +299,14 @@ function Feedback() {
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
+        {/* <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm mb-2">
             EduRide Feedback System • Continuous Improvement • User-Centric Design
           </p>
           <p className="text-xs text-gray-400">
             Your voice helps shape the future of school transportation management
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Add custom styles */}

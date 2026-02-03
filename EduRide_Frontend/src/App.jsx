@@ -55,6 +55,12 @@ import HelperMarkStatus from "./pages/Services/BusHelperServices/HelperMarkStatu
 //FeedBack
 import Feedback from "./pages/Feedback/Feedback";
 
+//Footer
+import Footer from "./components/Footer";
+
+//Change PassWord
+import ChangePassword from "./pages/Login/ChangePassword";
+
 
 function App() {
   return (
@@ -66,6 +72,8 @@ function App() {
           {/* ─── Public Routes ─── */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+
           <Route path="/about" element={<About />} />
           <Route path="/help" element={<HelpMe />} />
           <Route path="/contact" element={<Contact />} />
@@ -114,8 +122,9 @@ function App() {
 
           {/*Student FeedBack*/}
           <Route path="/feedback" element={<Feedback />}/>
-
+          
         </Routes>
+        <Footer />
       </div>
     </>
   );

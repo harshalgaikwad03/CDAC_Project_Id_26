@@ -141,7 +141,7 @@ export default function Contact() {
             </div>
 
             {/* Footer */}
-            <div className="mt-12 pt-8 border-t border-gray-200 text-center">
+            {/* <div className="mt-12 pt-8 border-t border-gray-200 text-center">
               <p className="text-gray-600 font-medium">
                 EduRide – Smart, Secure & Reliable School Transportation Management
               </p>
@@ -152,7 +152,7 @@ export default function Contact() {
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                 <span>Made for Schools</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

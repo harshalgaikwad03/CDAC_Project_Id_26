@@ -667,11 +667,11 @@ function SchoolBusDetails() {
             <span className="font-medium">School ID: {schoolId}</span>
           </div>
           <p className="text-sm text-gray-500">
-            Bus Fleet Management System • EduRide • Last updated: {new Date().toLocaleDateString()}
+            • Last updated: {new Date().toLocaleDateString()}
           </p>
-          <p className="text-xs text-gray-400 mt-2">
+          {/* <p className="text-xs text-gray-400 mt-2">
             All helper assignments are logged for compliance and safety records
-          </p>
+          </p> */}
         </div>
       </div>
 

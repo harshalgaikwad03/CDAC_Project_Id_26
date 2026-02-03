@@ -129,6 +129,7 @@ function Home() {
               <FaSignOutAlt className="text-gray-600 group-hover:text-red-500 transition-colors duration-300" />
               <span className="group-hover:text-red-600 transition-colors duration-300">Logout</span>
             </button>
+            
           </div>
         </div>
       </div>
@@ -222,10 +223,6 @@ function Home() {
           </div>
         </div>
 
-        
-        <p className="text-center text-gray-500 text-sm font-medium mt-12">
-           real-world school transport management • Secure • Scalable • User-Friendly
-        </p>
       </div>
     </div>
   );

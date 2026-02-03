@@ -196,6 +196,9 @@ public class SecurityConfig {
 
 
 
+             // ✅ CHANGE PASSWORD (ALL LOGGED-IN USERS)
+                .requestMatchers(HttpMethod.POST, "/api/user/change-password")
+                .hasAnyAuthority("STUDENT", "SCHOOL", "AGENCY", "DRIVER", "HELPER")
 
                 // 1️⃣3️⃣ EVERYTHING ELSE
                 .anyRequest().authenticated()

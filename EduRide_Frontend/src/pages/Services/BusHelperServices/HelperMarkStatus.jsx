@@ -109,6 +109,7 @@ function HelperMarkStatus() {
       (student.rollNo && student.rollNo.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (student.className && student.className.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (student.phone && student.phone.includes(searchTerm));
+      (student.email && student.email.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = filterStatus === "ALL" || statusMap[student.id] === filterStatus;
     
@@ -120,6 +121,7 @@ function HelperMarkStatus() {
     if (sortBy === "name") return a.name.localeCompare(b.name);
     if (sortBy === "class") return (a.className || "").localeCompare(b.className || "");
     if (sortBy === "roll") return (a.rollNo || "").localeCompare(b.rollNo || "");
+    if (sortBy === "email") return (a.email || "").localeCompare(b.email || "");
     if (sortBy === "status") return (statusMap[a.id] || "").localeCompare(statusMap[b.id] || "");
     return 0;
   });
@@ -152,6 +154,7 @@ function HelperMarkStatus() {
       "Roll No",
       "Class",
       "Contact",
+      "Email",
       "Bus No",
       "Status",
       "Updated",
@@ -162,6 +165,7 @@ function HelperMarkStatus() {
       s.rollNo || "-",
       s.className || "-",
       s.phone || "-",
+      s.email||"-",
       s.busNumber || "N/A",
       statusMap[s.id] || "PENDING",
       new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
@@ -190,6 +194,7 @@ function HelperMarkStatus() {
       "Roll No": s.rollNo || "-",
       Class: s.className || "-",
       Contact: s.phone || "-",
+      Email:s.email || "-",
       "Bus No": s.busNumber || "N/A",
       Status: statusMap[s.id] || "PENDING",
       "Status Time": new Date().toLocaleTimeString(),
@@ -205,6 +210,7 @@ function HelperMarkStatus() {
       { wch: 10 }, // Roll No
       { wch: 12 }, // Class
       { wch: 15 }, // Contact
+      {wch:15}, //Email
       { wch: 10 }, // Bus No
       { wch: 12 }, // Status
       { wch: 15 }, // Status Time
@@ -355,6 +361,7 @@ function HelperMarkStatus() {
                   <option value="name">Sort by Name</option>
                   <option value="class">Sort by Class</option>
                   <option value="roll">Sort by Roll No</option>
+                  <option value="email">Sort by Email</option>
                   <option value="status">Sort by Status</option>
                 </select>
                 <FaSortAmountDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -465,14 +472,15 @@ function HelperMarkStatus() {
                   key={s.id}
                   className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300"
                 >
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-6">
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-2 lg:gap-3 mb-4">
                       <Info label="Student Name" value={s.name} icon={<FaUserCheck className="text-gray-400" />} />
                       <Info label="Roll Number" value={s.rollNo || "N/A"} />
                       <Info label="Class" value={s.className || "Not Assigned"} />
                       <Info label="Contact" value={s.phone || "No Contact"} />
+                      <Info label="Email" value={s.email || "No Email"}/>
                       <Info label="Bus Number" value={s.busNumber || "N/A"} icon={<FaBus className="text-gray-400" />} />
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <p className="text-sm text-gray-500">Current Status</p>
                         <div className={`inline-flex items-center px-3 py-1.5 rounded-full ${statusConfig?.bg} ${statusConfig?.text} border ${statusConfig?.border}`}>
                           <span className="font-semibold">{statusConfig?.label}</span>
@@ -524,9 +532,9 @@ function HelperMarkStatus() {
 
         {/* ===== FOOTER ===== */}
         <div className="text-center text-gray-500 mt-12 pt-8 border-t border-gray-200">
-          <p className="text-sm mb-2">
+          {/* <p className="text-sm mb-2">
             Bus Helper Management System • EduRide • Real-time Status Tracking
-          </p>
+          </p> */}
           <p className="text-xs text-gray-400">
             Report generated on {new Date().toLocaleString()} • All status changes are logged for audit
           </p>

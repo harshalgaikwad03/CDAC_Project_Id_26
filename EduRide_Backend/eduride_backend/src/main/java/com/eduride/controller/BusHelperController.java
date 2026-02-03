@@ -165,6 +165,7 @@ public class BusHelperController {
                     dto.setId(student.getId());
                     dto.setName(student.getName());
                     dto.setRollNo(student.getRollNo());
+                    dto.setEmail(student.getEmail());
                     dto.setClassName(student.getClassName());
                     dto.setPhone(student.getPhone());
                     dto.setBusNumber(

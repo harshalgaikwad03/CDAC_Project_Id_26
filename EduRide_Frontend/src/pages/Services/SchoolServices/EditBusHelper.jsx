@@ -316,13 +316,13 @@ function EditBusHelper() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-sm text-gray-500 mt-12 pt-6 border-t border-gray-100">
+        {/* <div className="text-center text-sm text-gray-500 mt-12 pt-6 border-t border-gray-100">
           <p className="flex flex-col sm:flex-row items-center justify-center gap-2">
             <span>School Bus Helper Management • EduRide</span>
             <span className="hidden sm:inline w-1 h-1 bg-gray-300 rounded-full"></span>
             <span>© {new Date().getFullYear()} All Rights Reserved</span>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

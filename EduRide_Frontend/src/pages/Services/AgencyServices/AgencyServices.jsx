@@ -111,13 +111,13 @@ function AgencyServices() {
         
 
         {/* ===== FOOTER NOTE ===== */}
-        <div className="text-center text-sm text-gray-500 mt-16 pt-8 border-t border-gray-100">
+        {/* <div className="text-center text-sm text-gray-500 mt-16 pt-8 border-t border-gray-100">
           <p className="flex flex-col sm:flex-row items-center justify-center gap-2">
             <span>Agency-level service management designed for efficiency, safety, and scalability</span>
             <span className="hidden sm:inline w-1 h-1 bg-gray-300 rounded-full"></span>
             <span>© {new Date().getFullYear()} EduRide</span>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -330,11 +330,11 @@ function EditStudent() {
         </div>
 
         {/* ===== FOOTER ===== */}
-        <div className="text-center text-gray-500 mt-10 pt-6 border-t border-gray-200">
+        {/* <div className="text-center text-gray-500 mt-10 pt-6 border-t border-gray-200">
           <p className="text-sm">
             School Student Management • EduRide • All changes are logged for security
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

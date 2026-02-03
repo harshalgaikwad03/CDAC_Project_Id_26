@@ -315,13 +315,13 @@ function DriverDashboard() {
           </div>
 
           {/* Footer */}
-          <div className="text-center text-xs text-gray-500 mt-14 pt-6 border-t border-gray-200/60">
+          {/* <div className="text-center text-xs text-gray-500 mt-14 pt-6 border-t border-gray-200/60">
             <p className="flex flex-col sm:flex-row items-center justify-center gap-2">
               <span>Dashboard designed to help drivers ensure accurate and safe student transportation</span>
               <span className="hidden sm:inline w-1 h-1 bg-gray-300 rounded-full"></span>
               <span>© {new Date().getFullYear()} EduRide</span>
             </p>
-          </div>
+          </div> */}
 
         </div>
       </div>
